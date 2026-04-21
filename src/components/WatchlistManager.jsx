@@ -44,7 +44,7 @@ export default function WatchlistManager() {
           </div>
           <div>
             <h2 className="text-sm font-bold text-white">Watch-Only Portfolio</h2>
-            <p className="text-xs text-gray-600">No wallet connect needed — just paste an address</p>
+            <p className="text-xs text-slate-600">No wallet connect needed — just paste an address</p>
           </div>
         </div>
 
@@ -53,7 +53,7 @@ export default function WatchlistManager() {
           className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium
             transition-all border
             ${showForm
-              ? 'bg-white/[0.06] border-white/[0.1] text-gray-300'
+              ? 'bg-white/[0.06] border-white/[0.1] text-slate-300'
               : 'bg-indigo-600/20 border-indigo-500/40 text-indigo-300 hover:bg-indigo-600/30'}`}
         >
           <PlusCircle size={13} />
@@ -123,11 +123,11 @@ export default function WatchlistManager() {
       {list.length === 0 ? (
         <div className="glass-card p-10 flex flex-col items-center justify-center gap-3 text-center">
           <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.06]">
-            <Wallet size={28} className="text-gray-700" />
+            <Wallet size={28} className="text-slate-700" />
           </div>
           <div>
-            <p className="text-sm text-gray-500">No addresses watched yet</p>
-            <p className="text-xs text-gray-700 mt-1">
+            <p className="text-sm text-slate-500">No addresses watched yet</p>
+            <p className="text-xs text-slate-700 mt-1">
               Add any public EVM or TRON address — no sign-in required
             </p>
           </div>
@@ -154,7 +154,7 @@ export default function WatchlistManager() {
       )}
 
       {list.length > 0 && (
-        <p className="text-[10px] text-gray-700 text-center">
+        <p className="text-[10px] text-slate-700 text-center">
           {list.length} address{list.length > 1 ? 'es' : ''} watched · Balances fetched on demand · Data stored locally
         </p>
       )}
