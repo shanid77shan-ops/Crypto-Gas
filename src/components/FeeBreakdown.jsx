@@ -1,4 +1,4 @@
-import { Clock, Zap, DollarSign, AlertTriangle, ExternalLink } from 'lucide-react'
+import { Clock, Zap, DollarSign, Info, ExternalLink } from 'lucide-react'
 import { fmtToken } from '../lib/bridgeService'
 
 function fmtUSD(n, decimals = 2) {
@@ -92,7 +92,7 @@ function EvmBreakdown({ quote }) {
   )
 }
 
-// ── Non-EVM (TRON ↔ ETH) fee breakdown ────────────────────────────────────────
+// ── Non-EVM (TRON → EVM) manual fee estimate ──────────────────────────────────
 
 function NonEvmNotice({ quote }) {
   const cexLinks = [
@@ -101,112 +101,81 @@ function NonEvmNotice({ quote }) {
     { name: 'Bybit',   href: 'https://www.bybit.com/en/trade/spot' },
   ]
 
-  const hasFees = quote.totalFeesUSD > 0
+  const hasPrices = quote.totalFeesUSD > 0
+
+  const feeRows = [
+    {
+      dot  : 'bg-red-400',
+      label: 'Source Fee (TRON)',
+      sub  : `~${quote.tronTriggerTRX} TRX · standard transfer energy`,
+      right: quote.tronTriggerTRX + ' TRX',
+      usd  : hasPrices ? `≈ $${fmtUSD(quote.tronTriggerUSD)}` : null,
+    },
+    {
+      dot  : 'bg-violet-400',
+      label: 'CEX Withdrawal Fee',
+      sub  : 'Standard exchange fee for USDT withdrawal',
+      right: `$${quote.cexFeeMin}–$${quote.cexFeeMax} USDT`,
+      usd  : null,
+    },
+    {
+      dot  : 'bg-blue-400',
+      label: `Destination Gas (${quote.toChainName})`,
+      sub  : `~${quote.ethClaimGasUnits?.toLocaleString()} gas units${quote.ethClaimGasGwei > 0 ? ` @ ${quote.ethClaimGasGwei} Gwei` : ''}`,
+      right: hasPrices ? `$${fmtUSD(quote.ethClaimFeeUSD)}` : '—',
+      usd  : hasPrices ? 'in ETH' : null,
+    },
+  ]
 
   return (
     <div className="space-y-4">
-      {/* CEX notice banner */}
-      <div className="rounded-xl bg-amber-500/8 border border-amber-500/25 p-4 space-y-1.5">
-        <div className="flex items-center gap-2">
-          <AlertTriangle size={14} className="text-amber-400 shrink-0" />
-          <p className="text-sm font-semibold text-amber-300">
-            TRON ↔ EVM requires a CEX bridge
+
+      {/* Soft info banner — no error tone */}
+      <div className="rounded-xl bg-slate-800/60 border border-slate-700/50 p-4 flex items-start gap-3">
+        <Info size={15} className="text-cyan-400 shrink-0 mt-0.5" />
+        <div className="space-y-0.5">
+          <p className="text-sm font-semibold text-slate-100">
+            Direct bridging not supported
+          </p>
+          <p className="text-xs text-slate-400 leading-relaxed">
+            Use a CEX (like Binance) for this route. Fee estimate below is calculated
+            from live TRX and ETH prices so you can plan your move.
           </p>
         </div>
-        <p className="text-xs text-slate-400 leading-relaxed">
-          Decentralised bridges (LI.FI, Hop, Stargate) do not support TRON.
-          Use a centralised exchange to transfer. Fee estimate below is based on live prices.
-        </p>
       </div>
 
-      {/* Fee table */}
+      {/* Fee rows */}
       <div className="rounded-xl border border-white/[0.06] divide-y divide-white/[0.04] overflow-hidden">
-
-        {/* TRON side */}
-        <div className="px-4 py-2 bg-white/[0.02]">
-          <p className="text-[10px] uppercase tracking-widest text-slate-600">
-            Source — {quote.fromChainName}
-          </p>
-        </div>
-        <div className="flex items-start justify-between px-4 py-3 bg-white/[0.02] gap-3">
-          <div className="flex items-start gap-2.5 min-w-0">
-            <div className="mt-1 w-2 h-2 rounded-full bg-red-400 shrink-0" />
-            <div className="min-w-0">
-              <p className="text-xs font-semibold text-slate-200">
-                Trigger Smart Contract
-              </p>
-              <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
-                ~{quote.tronTriggerTRX} TRX consumed as energy / bandwidth
-                {quote.trxPriceUSD > 0 && (
-                  <span className="text-slate-600 ml-1">
-                    (1 TRX ≈ ${fmtUSD(quote.trxPriceUSD)})
-                  </span>
-                )}
-              </p>
+        {feeRows.map(({ dot, label, sub, right, usd }) => (
+          <div key={label}
+            className="flex items-start justify-between px-4 py-3 bg-white/[0.02] gap-3">
+            <div className="flex items-start gap-2.5 min-w-0">
+              <div className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${dot}`} />
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-slate-200">{label}</p>
+                <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">{sub}</p>
+              </div>
+            </div>
+            <div className="text-right shrink-0">
+              <p className="text-xs font-bold text-white">{right}</p>
+              {usd && <p className="text-[11px] text-slate-500 mt-0.5">{usd}</p>}
             </div>
           </div>
-          <div className="text-right shrink-0">
-            <p className="text-xs font-bold text-white">
-              {quote.tronTriggerTRX} TRX
-            </p>
-            {hasFees && (
-              <p className="text-[11px] text-slate-500 mt-0.5">
-                ≈ ${fmtUSD(quote.tronTriggerUSD)}
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* ETH side */}
-        <div className="px-4 py-2 bg-white/[0.02]">
-          <p className="text-[10px] uppercase tracking-widest text-slate-600">
-            Destination — {quote.toChainName}
-          </p>
-        </div>
-        <div className="flex items-start justify-between px-4 py-3 bg-white/[0.02] gap-3">
-          <div className="flex items-start gap-2.5 min-w-0">
-            <div className="mt-1 w-2 h-2 rounded-full bg-blue-400 shrink-0" />
-            <div className="min-w-0">
-              <p className="text-xs font-semibold text-slate-200">
-                Claim Fee (ETH gas)
-              </p>
-              <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
-                ~{quote.ethClaimGasUnits?.toLocaleString()} gas units
-                {quote.ethClaimGasGwei > 0 && (
-                  <span> @ {quote.ethClaimGasGwei} Gwei</span>
-                )}
-                {quote.ethPriceUSD > 0 && (
-                  <span className="text-slate-600 ml-1">
-                    (ETH ≈ ${fmtUSD(quote.ethPriceUSD, 0)})
-                  </span>
-                )}
-              </p>
-            </div>
-          </div>
-          <div className="text-right shrink-0">
-            {hasFees ? (
-              <>
-                <p className="text-xs font-bold text-white">
-                  ${fmtUSD(quote.ethClaimFeeUSD)}
-                </p>
-                <p className="text-[11px] text-slate-500 mt-0.5">in ETH</p>
-              </>
-            ) : (
-              <p className="text-xs text-slate-500">—</p>
-            )}
-          </div>
-        </div>
+        ))}
 
         {/* Total */}
         <div className="flex items-center justify-between px-4 py-3.5 bg-white/[0.04]">
-          <p className="text-sm font-bold text-slate-200">Total Est. Fees</p>
+          <div>
+            <p className="text-sm font-bold text-slate-200">Total Estimate</p>
+            <p className="text-[10px] text-slate-600 mt-0.5">Source fee + CEX fee + dest gas</p>
+          </div>
           <div className="text-right">
-            {hasFees ? (
+            {hasPrices ? (
               <p className="text-base font-black text-white">
                 ${fmtUSD(quote.totalFeesUSD)}
               </p>
             ) : (
-              <p className="text-sm text-slate-500">Fetching prices…</p>
+              <p className="text-sm text-slate-500 animate-pulse">Fetching prices…</p>
             )}
           </div>
         </div>
@@ -216,7 +185,7 @@ function NonEvmNotice({ quote }) {
       <div className="flex items-center gap-2 text-xs text-slate-500 bg-white/[0.02]
         border border-white/[0.05] rounded-lg px-3 py-2">
         <Clock size={11} className="text-slate-600 shrink-0" />
-        Typical transfer time:&nbsp;
+        Typical time:&nbsp;
         <span className="text-slate-300 font-semibold">
           {quote.typicalMinutesMin}–{quote.typicalMinutesMax} min
         </span>
@@ -226,7 +195,7 @@ function NonEvmNotice({ quote }) {
       {/* CEX links */}
       <div className="space-y-2">
         <p className="text-[10px] uppercase tracking-widest text-slate-600">
-          Recommended exchanges
+          Bridge via exchange
         </p>
         <div className="flex flex-wrap gap-2">
           {cexLinks.map(({ name, href }) => (

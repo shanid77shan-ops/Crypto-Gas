@@ -11,7 +11,8 @@
       "mcp__Claude_Preview__preview_start",
       "mcp__23f573de-66ba-4bee-8c76-4b95c49826f8__deploy_to_vercel",
       "Bash(vercel --version)",
-      "Bash(vercel deploy *)"
+      "Bash(vercel deploy *)",
+      "Bash(vercel env *)"
     ]
   }
 }

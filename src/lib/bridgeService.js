@@ -274,7 +274,11 @@ async function buildNonEvmResult(fromChain, toChain, fromToken, toToken, amount,
 
   const tronTriggerUSD  = TRON_TRIGGER_TRX * trxPrice
   const ethClaimFeeUSD  = (gasGwei * ETH_CLAIM_GAS / 1e9) * ethPrice
-  const totalFeesUSD    = tronTriggerUSD + ethClaimFeeUSD
+  // CEX withdrawal fee: exchanges charge ~1–2 USDT flat for USDT withdrawals
+  const cexFeeMin       = 1
+  const cexFeeMax       = 2
+  const cexFeeMid       = 1.5
+  const totalFeesUSD    = tronTriggerUSD + cexFeeMid + ethClaimFeeUSD
 
   return {
     type              : 'non-evm',
@@ -291,6 +295,9 @@ async function buildNonEvmResult(fromChain, toChain, fromToken, toToken, amount,
     // Live fee breakdown
     tronTriggerTRX    : TRON_TRIGGER_TRX,
     tronTriggerUSD,
+    cexFeeMin,
+    cexFeeMax,
+    cexFeeMid,
     ethClaimGasUnits  : ETH_CLAIM_GAS,
     ethClaimGasGwei   : Math.round(gasGwei * 10) / 10,
     ethClaimFeeUSD,

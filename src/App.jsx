@@ -35,8 +35,8 @@ export default function App() {
       {/* ── Page content ─────────────────────────────────────────────────── */}
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-6">
 
-        {/* Row 0 ─ Bridge Estimator (full width) */}
-        <section aria-label="Cross-chain bridge estimator">
+        {/* Row 0 ─ ChangeNOW USDT Cross-Chain Swap (full width) */}
+        <section aria-label="USDT cross-chain swap">
           <SwapCard />
         </section>
 
@@ -74,7 +74,7 @@ export default function App() {
         <span className="text-slate-400 font-semibold">Global Gas</span>
         <span className="mx-2 text-slate-700">·</span>
         Powered by&nbsp;
-        <span className="text-slate-500">Alchemy · TronGrid · CryptoCompare · LI.FI · Supabase</span>
+        <span className="text-slate-500">Alchemy · TronGrid · CryptoCompare · ChangeNOW · LI.FI · Supabase</span>
         <span className="mx-2 text-slate-700">|</span>
         Gas refreshes every 60 s
       </footer>
