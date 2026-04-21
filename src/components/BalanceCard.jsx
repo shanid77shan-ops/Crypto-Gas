@@ -7,32 +7,32 @@ const STATUS_MSG = {
 }
 
 export default function BalanceCard({ chainId, data }) {
-  const chain                = CHAINS[chainId]
-  const { balance, status }  = data ?? { balance: null, status: 'unknown' }
-  const msg                  = STATUS_MSG[status]
+  const chain               = CHAINS[chainId]
+  const { balance, status } = data ?? { balance: null, status: 'unknown' }
+  const msg                 = STATUS_MSG[status]
 
   const statusBadge =
-    status === 'ok'           ? 'bg-emerald-400/10 text-emerald-400 border-emerald-400/25'
-    : status === 'incompatible' ? 'bg-slate-800/60 text-slate-600 border-slate-700/40'
-    : status === 'error'      ? 'bg-red-400/10 text-red-400 border-red-400/25'
-    :                           'bg-slate-800/60 text-slate-600 border-slate-700/40'
+    status === 'ok'            ? 'bg-emerald-400/10 text-emerald-400 border-emerald-400/25'
+    : status === 'incompatible' ? 'bg-slate-800/60 text-slate-500 border-slate-700/40'
+    : status === 'error'       ? 'bg-red-400/10 text-red-400 border-red-400/25'
+    :                            'bg-slate-800/60 text-slate-500 border-slate-700/40'
 
   const statusLabel =
     status === 'ok' ? 'Live' : status === 'incompatible' ? 'N/A' : status === 'error' ? 'Error' : '—'
 
   return (
-    <div className={`glass-card glass-card-interactive p-5 border ${chain.border} flex flex-col gap-3`}>
+    <div className={`glass-card glass-card-interactive p-6 border ${chain.border} flex flex-col gap-4`}>
 
       {/* Chain identity */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <span className="text-xl leading-none">{chain.icon}</span>
+        <div className="flex items-center gap-3">
+          <span className="text-2xl leading-none">{chain.icon}</span>
           <div>
-            <p className="text-sm font-semibold text-slate-100">{chain.name}</p>
-            <p className="text-xs text-slate-500">{chain.symbol} Network</p>
+            <p className="text-base font-bold text-slate-100">{chain.name}</p>
+            <p className="text-sm text-slate-500">{chain.symbol} Network</p>
           </div>
         </div>
-        <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold border ${statusBadge}`}>
+        <span className={`text-xs px-2.5 py-1 rounded-full font-semibold border ${statusBadge}`}>
           {statusLabel}
         </span>
       </div>
@@ -43,19 +43,19 @@ export default function BalanceCard({ chainId, data }) {
       {/* Balance */}
       {status === 'ok' ? (
         <div>
-          <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">
+          <p className="text-xs text-slate-500 uppercase tracking-widest mb-1.5">
             USDT Balance
           </p>
-          <p className="text-2xl font-black tabular-nums text-slate-50">
+          <p className="text-3xl font-black tabular-nums text-slate-50">
             {balance?.toLocaleString('en-US', {
               minimumFractionDigits : 2,
               maximumFractionDigits : 2,
             })}
-            <span className="text-sm font-normal text-slate-500 ml-2">USDT</span>
+            <span className="text-base font-normal text-slate-500 ml-2">USDT</span>
           </p>
         </div>
       ) : (
-        <p className="text-sm text-slate-600 italic">{msg ?? 'Waiting…'}</p>
+        <p className="text-sm text-slate-500 italic">{msg ?? 'Waiting…'}</p>
       )}
     </div>
   )

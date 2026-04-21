@@ -64,7 +64,7 @@ function HeatmapGrid({ data, selectedDay, onSelectDay }) {
         {/* Hour labels */}
         <div className="flex mb-1 ml-10">
           {HOURS.map((h, i) => (
-            <div key={i} className="flex-1 text-center text-[8px] text-slate-700 truncate px-px">
+            <div key={i} className="flex-1 text-center text-[11px] text-slate-700 truncate px-px">
               {i % 3 === 0 ? h : ''}
             </div>
           ))}
@@ -244,11 +244,9 @@ export default function GasHeatmap() {
             <div className="p-1.5 rounded-lg bg-cyan-500/15 border border-cyan-500/25">
               <Clock size={14} className="text-cyan-400" />
             </div>
-            <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
-              Gas Heatmap
-            </h2>
+            <h2 className="text-base font-bold text-slate-100">Gas Heatmap</h2>
           </div>
-          <p className="text-xs text-slate-600">
+          <p className="text-sm text-slate-500 mt-0.5">
             Best times to transact — click a day to drill down
           </p>
         </div>

@@ -5,6 +5,7 @@ import GasHistory       from './components/GasHistory'
 import WorthItCalculator from './components/WorthItCalculator'
 import GasHeatmap       from './components/GasHeatmap'
 import WatchlistManager from './components/WatchlistManager'
+import SwapCard         from './components/SwapCard'
 
 export default function App() {
   return (
@@ -33,6 +34,11 @@ export default function App() {
 
       {/* ── Page content ─────────────────────────────────────────────────── */}
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-6">
+
+        {/* Row 0 ─ Bridge Estimator (full width) */}
+        <section aria-label="Cross-chain bridge estimator">
+          <SwapCard />
+        </section>
 
         {/* Row 1 ─ Gas indicator + Worth It Calculator
             Mobile : single column (stacks)
@@ -66,7 +72,7 @@ export default function App() {
       <footer className="text-center py-5 text-xs text-slate-600
         border-t border-slate-800/60">
         Powered by&nbsp;
-        <span className="text-slate-500">Alchemy · TronGrid · CryptoCompare · Supabase</span>
+        <span className="text-slate-500">Alchemy · TronGrid · CryptoCompare · LI.FI · Supabase</span>
         <span className="mx-2 text-slate-700">|</span>
         Gas refreshes every 60 s
       </footer>

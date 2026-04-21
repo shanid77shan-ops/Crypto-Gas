@@ -108,7 +108,7 @@ function FormulaBreakdown({ gasGwei, ethPrice, gasLimit, gasCost }) {
                 <div>
                   <span className="text-white">{value}</span>
                   <span className="text-slate-600 ml-1">{unit}</span>
-                  <p className="text-[10px] text-slate-700 mt-0.5 font-sans">{note}</p>
+                  <p className="text-xs text-slate-700 mt-0.5 font-sans">{note}</p>
                 </div>
               </div>
             ))}
@@ -196,11 +196,11 @@ export default function WorthItCalculator() {
             <div className="p-1.5 rounded-lg bg-indigo-500/15 border border-indigo-500/25">
               <Fuel size={14} className="text-indigo-400" />
             </div>
-            <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
+            <h2 className="text-base font-bold text-slate-100">
               "Worth It?" Calculator
             </h2>
           </div>
-          <p className="text-xs text-slate-600">Gas fee vs. your transaction — 5% threshold</p>
+          <p className="text-sm text-slate-500 mt-0.5">Gas fee vs. your transaction — 5% threshold</p>
         </div>
         <button
           onClick={() => refresh(true)}
@@ -264,7 +264,7 @@ export default function WorthItCalculator() {
                   : 'bg-white/[0.03] border-white/[0.06] text-slate-500 hover:text-slate-300'}`}
             >
               {opt.label}
-              <span className="block text-[10px] opacity-60 mt-0.5 font-mono">{opt.sub}</span>
+              <span className="block text-xs opacity-60 mt-0.5 font-mono">{opt.sub}</span>
             </button>
           ))}
         </div>
@@ -302,7 +302,7 @@ export default function WorthItCalculator() {
           </div>
 
           <div className="space-y-1.5">
-            <div className="flex justify-between text-[10px] text-slate-700">
+            <div className="flex justify-between text-xs text-slate-700">
               <span>0%</span>
               <span className="text-white/30">— 5% limit —</span>
               <span>100%+</span>
@@ -312,11 +312,11 @@ export default function WorthItCalculator() {
 
           <div className="grid grid-cols-2 gap-3 text-sm border-t border-white/[0.05] pt-4">
             <div>
-              <p className="text-[10px] text-slate-600 uppercase tracking-wide">Gas cost (USD)</p>
+              <p className="text-xs text-slate-600 uppercase tracking-wide">Gas cost (USD)</p>
               <p className="font-bold text-white mt-0.5">${fmt(gasCost, 4)}</p>
             </div>
             <div>
-              <p className="text-[10px] text-slate-600 uppercase tracking-wide">Your amount</p>
+              <p className="text-xs text-slate-600 uppercase tracking-wide">Your amount</p>
               <p className="font-bold text-white mt-0.5">${fmt(txNum)}</p>
             </div>
           </div>
