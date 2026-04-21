@@ -7,13 +7,11 @@
 
 import axios from 'axios'
 
-const CN_BASE = 'https://api.changenow.io/v1'
-const API_KEY = import.meta.env.VITE_CHANGENOW_API_KEY ?? ''
-
+// All ChangeNOW calls go through our Vercel serverless proxy (/api/cn/...)
+// so the API key stays server-side and never hits the browser CORS check.
 const cn = axios.create({
-  baseURL: CN_BASE,
+  baseURL: '/api/cn',
   timeout: 15_000,
-  headers: { 'x-changenow-api-key': API_KEY },
 })
 
 // ── Pair constants ────────────────────────────────────────────────────────────
@@ -76,9 +74,7 @@ export async function createSwap({ from, to, address, amount, refundAddress }) {
   const body = { from, to, address, amount: String(amount) }
   if (refundAddress) body.refundAddress = refundAddress
 
-  const { data } = await cn.post('/transactions', body, {
-    params: { api_key: API_KEY },
-  })
+  const { data } = await cn.post('/transactions', body)
   return data
 }
 

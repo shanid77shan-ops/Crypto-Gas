@@ -1,4 +1,5 @@
-const CACHE   = 'cryptogas-v1'
+// Bump version whenever you need to force-evict all cached assets
+const CACHE   = 'cryptogas-v2'
 const STATIC  = [
   '/',
   '/index.html',
@@ -11,50 +12,69 @@ self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE)
       .then(c => c.addAll(STATIC))
-      .then(() => self.skipWaiting())
+      .then(() => self.skipWaiting())   // take over immediately
   )
 })
 
-// Activate: purge old caches
+// Activate: delete every cache that isn't the current version
 self.addEventListener('activate', e => {
   e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-    ).then(() => self.clients.claim())
+    caches.keys()
+      .then(keys => Promise.all(
+        keys.filter(k => k !== CACHE).map(k => caches.delete(k))
+      ))
+      .then(() => self.clients.claim())
   )
 })
 
-// Fetch strategy:
-//   - API / RPC calls → network-only (always fresh prices)
-//   - Everything else → stale-while-revalidate (fast load + background refresh)
-const API_PATTERNS = [
+// Routes that must NEVER be served from cache
+const NETWORK_ONLY = [
   'alchemy.com',
   'li.quest',
   'cryptocompare.com',
   'tronweb.org',
   'trongrid.io',
   'supabase.co',
+  'changenow.io',   // safety net — proxy should handle this, but skip cache if hit directly
+  '/api/',          // our own Vercel serverless proxy routes
 ]
 
 self.addEventListener('fetch', e => {
   const url = e.request.url
 
-  // Always hit the network for live API data
-  if (API_PATTERNS.some(p => url.includes(p))) {
-    e.respondWith(fetch(e.request))
+  // Network-only for all live data
+  if (NETWORK_ONLY.some(p => url.includes(p))) {
+    e.respondWith(
+      fetch(e.request).catch(
+        () => new Response(JSON.stringify({ error: 'Network unavailable' }), {
+          status : 503,
+          headers: { 'Content-Type': 'application/json' },
+        })
+      )
+    )
     return
   }
 
-  // Stale-while-revalidate for app shell + assets
+  // Stale-while-revalidate for app shell + static assets
   e.respondWith(
     caches.open(CACHE).then(async cache => {
       const cached = await cache.match(e.request)
-      const networkFetch = fetch(e.request).then(res => {
-        if (res.ok) cache.put(e.request, res.clone())
-        return res
-      }).catch(() => null)
 
-      return cached ?? await networkFetch
+      const networkFetch = fetch(e.request)
+        .then(res => {
+          if (res && res.ok) cache.put(e.request, res.clone())
+          return res
+        })
+        .catch(() => null)
+
+      // Return cached immediately; if nothing cached, wait for network
+      if (cached) {
+        networkFetch.catch(() => {}) // background refresh — ignore errors
+        return cached
+      }
+
+      const fresh = await networkFetch
+      return fresh ?? new Response('Offline', { status: 503 })
     })
   )
 })
