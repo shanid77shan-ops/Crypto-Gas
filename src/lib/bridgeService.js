@@ -23,7 +23,7 @@ const ETH_CLAIM_GAS_UNITS = 100_000
 const ESTIMATION_ADDRESS = '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'
 
 // Integrator fee config — 0.5% collected on every EVM bridge quote
-const INTEGRATOR      = 'crypto-gas-tracker'
+const INTEGRATOR      = 'CryptoGas'
 const FEE_PERCENT     = 0.005   // 0.5% expressed as a decimal
 const FEE_RECIPIENT   = '0x874c6292d2df7cf1b04e260ada777e396d79259e'
 

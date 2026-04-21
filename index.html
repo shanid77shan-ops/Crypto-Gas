@@ -2,12 +2,41 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Crypto Gas & Portfolio Tracker</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛽</text></svg>" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+    <title>Global Gas – Layer 2 Ecosystem</title>
+    <meta name="description" content="Live Ethereum gas prices, cross-chain bridge estimates, and watch-only portfolio. No wallet connect needed." />
+
+    <!-- PWA manifest -->
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- Theme colour (browser chrome on mobile) -->
+    <meta name="theme-color" content="#020617" />
+
+    <!-- iOS PWA -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Global Gas" />
+    <link rel="apple-touch-icon" href="/brand.png" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+
+    <!-- Open Graph (share previews) -->
+    <meta property="og:title"       content="Global Gas – Layer 2 Ecosystem" />
+    <meta property="og:description" content="Live gas prices, bridge fee estimates, and portfolio tracker." />
+    <meta property="og:type"        content="website" />
+    <meta property="og:image"       content="/icon.svg" />
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+        })
+      }
+    </script>
   </body>
 </html>

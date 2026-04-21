@@ -71,6 +71,8 @@ export default function App() {
       {/* ── Footer ─────────────────────────────────────────────────────────── */}
       <footer className="text-center py-5 text-xs text-slate-600
         border-t border-slate-800/60">
+        <span className="text-slate-400 font-semibold">Global Gas</span>
+        <span className="mx-2 text-slate-700">·</span>
         Powered by&nbsp;
         <span className="text-slate-500">Alchemy · TronGrid · CryptoCompare · LI.FI · Supabase</span>
         <span className="mx-2 text-slate-700">|</span>

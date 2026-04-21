@@ -1,4 +1,4 @@
-import { Fuel, Activity } from 'lucide-react'
+import { Activity } from 'lucide-react'
 
 export default function Header() {
   return (
@@ -9,19 +9,19 @@ export default function Header() {
 
         {/* Logo */}
         <div className="flex items-center gap-3">
-          <div className="relative p-2 rounded-xl
-            bg-gradient-to-br from-indigo-500/20 to-violet-500/20
-            border border-indigo-500/25">
-            <Fuel size={20} className="text-indigo-400" />
-            <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full
-              bg-emerald-400 ring-2 ring-slate-950 animate-pulse" />
-          </div>
+          <img
+            src="/brand.png"
+            alt="Global Gas"
+            className="h-9 w-auto max-w-[120px] object-contain object-left"
+            onError={e => { e.target.style.display = 'none' }}
+          />
           <div className="leading-none">
             <p className="text-lg font-bold tracking-tight
-              bg-gradient-to-r from-slate-100 to-slate-400 bg-clip-text text-transparent">
-              GasTracker
+              bg-gradient-to-r from-cyan-300 via-emerald-300 to-cyan-400
+              bg-clip-text text-transparent">
+              Global Gas
             </p>
-            <p className="text-xs text-slate-500 mt-0.5">Multi-chain · Live</p>
+            <p className="text-xs text-slate-500 mt-0.5">Layer 2 Ecosystem · Live</p>
           </div>
         </div>
 

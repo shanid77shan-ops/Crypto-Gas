@@ -1,0 +1,27 @@
+{
+  "name": "Global Gas – Layer 2 Ecosystem",
+  "short_name": "Global Gas",
+  "description": "Live Ethereum gas prices, cross-chain bridge estimates, and watch-only portfolio — no wallet connect needed.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#020617",
+  "theme_color": "#020617",
+  "categories": ["finance", "utilities"],
+  "icons": [
+    {
+      "src": "/brand.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "screenshots": [],
+  "prefer_related_applications": false
+}
