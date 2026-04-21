@@ -1,0 +1,105 @@
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BASE — slate-950 background, smooth scrollbar, font rendering
+   ═══════════════════════════════════════════════════════════════════════════ */
+@layer base {
+  :root {
+    /* Palette tokens used throughout the app */
+    --color-bg          : #020617;          /* slate-950  */
+    --color-surface     : rgba(15,23,42,.45); /* slate-900/45 */
+    --color-border      : rgba(148,163,184,.12); /* slate-400/12 */
+    --color-border-hi   : rgba(148,163,184,.22);
+
+    /* Neon accents */
+    --neon-emerald      : 52, 211, 153;     /* emerald-400 — Low Gas */
+    --neon-amber        : 251, 191, 36;     /* amber-400   — Average Gas */
+    --neon-red          : 248, 113, 113;    /* red-400     — High Gas */
+    --neon-indigo       : 99, 102, 241;     /* indigo-500 */
+    --neon-cyan         : 34, 211, 238;     /* cyan-400 */
+    --neon-violet       : 167, 139, 250;    /* violet-400 */
+  }
+
+  *, *::before, *::after {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(148,163,184,.15) transparent;
+  }
+
+  html, body {
+    background-color: var(--color-bg);
+    color: #e2e8f0;                         /* slate-200 */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   COMPONENTS — Glassmorphism cards
+   ═══════════════════════════════════════════════════════════════════════════ */
+@layer components {
+
+  /* ── Primary glass card ── */
+  .glass-card,
+  .card-glass {
+    background      : var(--color-surface);
+    backdrop-filter : blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border          : 1px solid var(--color-border);
+    border-radius   : 1.25rem;        /* rounded-2xl */
+    box-shadow      :
+      inset 0  1px 0  rgba(255,255,255,.06),   /* top highlight streak */
+      inset 0 -1px 0  rgba(0,0,0,.25),          /* bottom inner shadow */
+      0 4px  16px -2px rgba(0,0,0,.35),
+      0 16px 40px -8px rgba(0,0,0,.45);
+  }
+
+  /* Hover lift — opt-in with .glass-card-interactive */
+  .glass-card-interactive {
+    transition: transform .2s, box-shadow .2s;
+  }
+  .glass-card-interactive:hover {
+    transform   : translateY(-2px);
+    border-color: var(--color-border-hi);
+    box-shadow  :
+      inset 0  1px 0  rgba(255,255,255,.09),
+      0 8px  24px -4px rgba(0,0,0,.4),
+      0 24px 56px -8px rgba(0,0,0,.5);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   UTILITIES — Gas traffic-light glows (emerald-400 for Low Gas)
+   ═══════════════════════════════════════════════════════════════════════════ */
+@layer utilities {
+
+  /* Low Gas — emerald-400 */
+  .traffic-glow-green {
+    box-shadow:
+      0 0 14px  rgba(var(--neon-emerald), .80),
+      0 0 36px  rgba(var(--neon-emerald), .40),
+      0 0 80px  rgba(var(--neon-emerald), .18);
+  }
+
+  /* Average Gas — amber-400 */
+  .traffic-glow-yellow {
+    box-shadow:
+      0 0 14px  rgba(var(--neon-amber), .80),
+      0 0 36px  rgba(var(--neon-amber), .40),
+      0 0 80px  rgba(var(--neon-amber), .18);
+  }
+
+  /* High Gas — red-400 */
+  .traffic-glow-red {
+    box-shadow:
+      0 0 14px  rgba(var(--neon-red), .80),
+      0 0 36px  rgba(var(--neon-red), .40),
+      0 0 80px  rgba(var(--neon-red), .18);
+  }
+
+  /* Price-drop outer card glow */
+  .card-glow-emerald {
+    box-shadow:
+      inset 0 0 40px rgba(var(--neon-emerald), .06),
+      0 0 40px        rgba(var(--neon-emerald), .12);
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm create *)",
+      "Bash(dir /a \"C:\\\\Users\\\\ShaN\\\\Giithub\\\\Crypto Gas\")",
+      "Bash(npm init *)",
+      "Bash(npm install *)",
+      "Bash(npm run *)"
+    ]
+  }
+}
