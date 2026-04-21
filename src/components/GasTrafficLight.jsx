@@ -189,3 +189,7 @@ export default function GasTrafficLight() {
             <p className="text-[9px] text-slate-700">{label}</p>
           </div>
         ))}
+      </div>
+    </div>
+  )
+}

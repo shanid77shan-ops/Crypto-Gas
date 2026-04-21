@@ -60,4 +60,51 @@ export default function GasHistory() {
   if (!history.length) {
     return (
       <div className="glass-card p-6 text-center text-slate-600 text-sm">
-        Gas history will appear here once Supabase is configured and readings accumula
+        Gas history will appear here once Supabase is configured and readings accumulate.
+      </div>
+    )
+  }
+
+  return (
+    <div className="glass-card p-6 space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="p-1.5 rounded-lg bg-indigo-500/15 border border-indigo-500/25">
+            <History size={13} className="text-indigo-400" />
+          </div>
+          <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
+            Gas History
+          </h2>
+        </div>
+        <span className="text-xs text-slate-600">Last {history.length} readings</span>
+      </div>
+
+      {/* Trend sparkline */}
+      <div className="rounded-xl bg-slate-900/50 border border-slate-800/60 p-3">
+        <Sparkline data={history} />
+      </div>
+
+      {/* Reading list */}
+      <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+        {history.map(row => (
+          <div
+            key={row.id}
+            className="flex items-center justify-between py-1 px-2 rounded-lg
+              hover:bg-slate-800/30 transition-colors text-xs"
+          >
+            <span className="text-slate-500 tabular-nums">
+              {new Date(row.recorded_at).toLocaleTimeString([], {
+                hour   : '2-digit',
+                minute : '2-digit',
+              })}
+            </span>
+            <span className={`px-2 py-0.5 rounded-full font-semibold tabular-nums
+              ${gweiBadge(Number(row.gas_gwei))}`}>
+              {Number(row.gas_gwei).toFixed(1)} Gwei
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}

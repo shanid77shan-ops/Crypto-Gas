@@ -37,9 +37,9 @@ function CustomTooltip({ active, payload }) {
   const label = gwei < 20 ? '🟢 Cheap' : gwei < 50 ? '🟡 Average' : '🔴 Expensive'
   return (
     <div className="bg-gray-900 border border-white/10 rounded-xl px-3 py-2 text-xs shadow-2xl">
-      <p className="text-gray-400 mb-1">{HOURS[hour]}</p>
+      <p className="text-slate-400 mb-1">{HOURS[hour]}</p>
       <p className="text-white font-bold">{gwei.toFixed(1)} Gwei</p>
-      <p className="text-gray-500 mt-0.5">{label}</p>
+      <p className="text-slate-500 mt-0.5">{label}</p>
     </div>
   )
 }
@@ -64,7 +64,7 @@ function HeatmapGrid({ data, selectedDay, onSelectDay }) {
         {/* Hour labels */}
         <div className="flex mb-1 ml-10">
           {HOURS.map((h, i) => (
-            <div key={i} className="flex-1 text-center text-[8px] text-gray-700 truncate px-px">
+            <div key={i} className="flex-1 text-center text-[8px] text-slate-700 truncate px-px">
               {i % 3 === 0 ? h : ''}
             </div>
           ))}
@@ -76,7 +76,7 @@ function HeatmapGrid({ data, selectedDay, onSelectDay }) {
             <button
               onClick={() => onSelectDay(dayIdx === selectedDay ? null : dayIdx)}
               className={`w-9 text-[10px] text-right pr-2 shrink-0 transition-colors
-                ${selectedDay === dayIdx ? 'text-indigo-400 font-bold' : 'text-gray-600 hover:text-gray-400'}`}
+                ${selectedDay === dayIdx ? 'text-indigo-400 font-bold' : 'text-slate-600 hover:text-slate-400'}`}
             >
               {day}
             </button>
@@ -113,7 +113,7 @@ function HeatmapGrid({ data, selectedDay, onSelectDay }) {
             { label: 'High (<50)',       color: '#f97316' },
             { label: 'Very high (50+)',  color: '#ef4444' },
           ].map(({ label, color }) => (
-            <span key={label} className="flex items-center gap-1.5 text-[10px] text-gray-500">
+            <span key={label} className="flex items-center gap-1.5 text-[10px] text-slate-500">
               <span className="w-2.5 h-2.5 rounded-sm inline-block" style={{ backgroundColor: color }} />
               {label}
             </span>
@@ -152,7 +152,7 @@ function HourlyBarChart({ data, selectedDay }) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-slate-500">
           {selectedDay !== null ? `${DAYS[selectedDay]} hourly avg` : 'All-week hourly avg'}
         </p>
         {cheapest && (
@@ -190,7 +190,7 @@ function HourlyBarChart({ data, selectedDay }) {
         </BarChart>
       </ResponsiveContainer>
 
-      <div className="flex gap-4 text-[10px] text-gray-600">
+      <div className="flex gap-4 text-[10px] text-slate-600">
         <span className="flex items-center gap-1">
           <span className="w-6 border-t border-dashed border-emerald-500/50 inline-block" /> 20 Gwei
         </span>
@@ -244,11 +244,11 @@ export default function GasHeatmap() {
             <div className="p-1.5 rounded-lg bg-cyan-500/15 border border-cyan-500/25">
               <Clock size={14} className="text-cyan-400" />
             </div>
-            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
+            <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
               Gas Heatmap
             </h2>
           </div>
-          <p className="text-xs text-gray-600">
+          <p className="text-xs text-slate-600">
             Best times to transact — click a day to drill down
           </p>
         </div>
@@ -265,7 +265,7 @@ export default function GasHeatmap() {
       </div>
 
       {loading ? (
-        <div className="h-40 flex items-center justify-center text-gray-700 text-sm animate-pulse">
+        <div className="h-40 flex items-center justify-center text-slate-700 text-sm animate-pulse">
           Loading heatmap data…
         </div>
       ) : (
@@ -280,7 +280,7 @@ export default function GasHeatmap() {
         </>
       )}
 
-      <div className="flex items-center gap-1.5 text-[10px] text-gray-700">
+      <div className="flex items-center gap-1.5 text-[10px] text-slate-700">
         <Info size={10} />
         {data.length && data[0].day !== undefined
           ? 'Heatmap powered by Supabase historical data or seeded estimates'

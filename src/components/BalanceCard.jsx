@@ -46,4 +46,17 @@ export default function BalanceCard({ chainId, data }) {
           <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">
             USDT Balance
           </p>
-          <p cl
+          <p className="text-2xl font-black tabular-nums text-slate-50">
+            {balance?.toLocaleString('en-US', {
+              minimumFractionDigits : 2,
+              maximumFractionDigits : 2,
+            })}
+            <span className="text-sm font-normal text-slate-500 ml-2">USDT</span>
+          </p>
+        </div>
+      ) : (
+        <p className="text-sm text-slate-600 italic">{msg ?? 'Waiting…'}</p>
+      )}
+    </div>
+  )
+}
