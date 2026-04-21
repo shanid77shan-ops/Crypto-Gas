@@ -69,7 +69,7 @@ function FormulaBreakdown({ gasGwei, ethPrice, gasLimit, gasCost }) {
       <button
         onClick={() => setOpen(o => !o)}
         className="w-full flex items-center justify-between px-4 py-2.5
-          text-xs text-gray-500 hover:text-gray-300 hover:bg-white/[0.03] transition-all"
+          text-xs text-slate-500 hover:text-slate-300 hover:bg-white/[0.03] transition-all"
       >
         <span className="flex items-center gap-1.5">
           <Calculator size={11} />
@@ -85,13 +85,13 @@ function FormulaBreakdown({ gasGwei, ethPrice, gasLimit, gasCost }) {
           bg-[#07070f]/60 font-mono text-xs">
 
           {/* Formula line */}
-          <div className="flex items-center gap-2 flex-wrap text-gray-600">
-            <span className="text-gray-400">Cost</span>
+          <div className="flex items-center gap-2 flex-wrap text-slate-600">
+            <span className="text-slate-400">Cost</span>
             <span>=</span>
             <span className="text-indigo-400">Gas Limit</span>
-            <span className="text-gray-700">×</span>
+            <span className="text-slate-700">×</span>
             <span className="text-yellow-400">Gas Price</span>
-            <span className="text-gray-700">×</span>
+            <span className="text-slate-700">×</span>
             <span className="text-emerald-400">ETH Price</span>
           </div>
 
@@ -107,8 +107,8 @@ function FormulaBreakdown({ gasGwei, ethPrice, gasLimit, gasCost }) {
                 </span>
                 <div>
                   <span className="text-white">{value}</span>
-                  <span className="text-gray-600 ml-1">{unit}</span>
-                  <p className="text-[10px] text-gray-700 mt-0.5 font-sans">{note}</p>
+                  <span className="text-slate-600 ml-1">{unit}</span>
+                  <p className="text-[10px] text-slate-700 mt-0.5 font-sans">{note}</p>
                 </div>
               </div>
             ))}
@@ -116,21 +116,21 @@ function FormulaBreakdown({ gasGwei, ethPrice, gasLimit, gasCost }) {
 
           {/* Step-by-step arithmetic */}
           <div className="border-t border-white/[0.05] pt-3 space-y-1 text-[11px]">
-            <div className="flex gap-2 text-gray-600">
+            <div className="flex gap-2 text-slate-600">
               <span>=</span>
               <span>
                 {gasLimit.toLocaleString()}
-                <span className="text-gray-700 mx-1">×</span>
+                <span className="text-slate-700 mx-1">×</span>
                 {gasGwei} Gwei
-                <span className="text-gray-700 mx-1">×</span>
+                <span className="text-slate-700 mx-1">×</span>
                 ${fmt(ethPrice, 0)}
               </span>
             </div>
-            <div className="flex gap-2 text-gray-500">
+            <div className="flex gap-2 text-slate-500">
               <span>=</span>
               <span>
                 {gasCostETH.toFixed(8)} ETH
-                <span className="text-gray-700 mx-1">×</span>
+                <span className="text-slate-700 mx-1">×</span>
                 ${fmt(ethPrice, 0)}
               </span>
             </div>
@@ -138,7 +138,7 @@ function FormulaBreakdown({ gasGwei, ethPrice, gasLimit, gasCost }) {
               <span>=</span>
               <span>
                 <span className="text-cyan-400">${fmt(gasCost, 4)}</span>
-                <span className="text-gray-600 font-normal ml-2 font-sans">paid in gas</span>
+                <span className="text-slate-600 font-normal ml-2 font-sans">paid in gas</span>
               </span>
             </div>
           </div>
@@ -196,16 +196,16 @@ export default function WorthItCalculator() {
             <div className="p-1.5 rounded-lg bg-indigo-500/15 border border-indigo-500/25">
               <Fuel size={14} className="text-indigo-400" />
             </div>
-            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
+            <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
               "Worth It?" Calculator
             </h2>
           </div>
-          <p className="text-xs text-gray-600">Gas fee vs. your transaction — 5% threshold</p>
+          <p className="text-xs text-slate-600">Gas fee vs. your transaction — 5% threshold</p>
         </div>
         <button
           onClick={() => refresh(true)}
           disabled={refreshing}
-          className="p-2 rounded-lg hover:bg-white/5 text-gray-500 hover:text-gray-300 transition-all"
+          className="p-2 rounded-lg hover:bg-white/5 text-slate-500 hover:text-slate-300 transition-all"
         >
           <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} />
         </button>
@@ -218,7 +218,7 @@ export default function WorthItCalculator() {
           { icon: <DollarSign size={11} className="text-emerald-400" />, label: 'ETH Price', val: ethPrice ? `$${fmt(ethPrice, 0)}` : '—', width: 'w-24' },
         ].map(({ icon, label, val, width }) => (
           <div key={label} className="rounded-xl bg-white/[0.03] border border-white/[0.06] p-3 space-y-1">
-            <p className="text-xs text-gray-600 flex items-center gap-1.5">{icon} {label}</p>
+            <p className="text-xs text-slate-600 flex items-center gap-1.5">{icon} {label}</p>
             {loading ? (
               <div className={`h-5 ${width} rounded bg-white/5 animate-pulse`} />
             ) : (
@@ -238,7 +238,7 @@ export default function WorthItCalculator() {
       {/* Inputs */}
       <div className="space-y-3">
         <div className="relative">
-          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 font-semibold text-sm">$</span>
+          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 font-semibold text-sm">$</span>
           <input
             type="number" min="0" step="any"
             value={txAmount}
@@ -261,7 +261,7 @@ export default function WorthItCalculator() {
               className={`flex-1 rounded-xl px-3 py-2.5 text-xs font-medium transition-all border
                 ${gasLimit === opt.id
                   ? 'bg-indigo-600/20 border-indigo-500/50 text-indigo-300'
-                  : 'bg-white/[0.03] border-white/[0.06] text-gray-500 hover:text-gray-300'}`}
+                  : 'bg-white/[0.03] border-white/[0.06] text-slate-500 hover:text-slate-300'}`}
             >
               {opt.label}
               <span className="block text-[10px] opacity-60 mt-0.5 font-mono">{opt.sub}</span>
@@ -294,7 +294,7 @@ export default function WorthItCalculator() {
               <p className={`text-lg font-black ${result.worthIt ? 'text-emerald-400' : 'text-red-400'}`}>
                 {result.worthIt ? 'Worth It!' : 'Not Worth It'}
               </p>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-slate-500">
                 Gas is <strong className="text-white">{(result.gasPct * 100).toFixed(2)}%</strong> of
                 your <strong className="text-white">${fmt(txNum)}</strong> transaction
               </p>
@@ -302,7 +302,7 @@ export default function WorthItCalculator() {
           </div>
 
           <div className="space-y-1.5">
-            <div className="flex justify-between text-[10px] text-gray-700">
+            <div className="flex justify-between text-[10px] text-slate-700">
               <span>0%</span>
               <span className="text-white/30">— 5% limit —</span>
               <span>100%+</span>
@@ -312,11 +312,11 @@ export default function WorthItCalculator() {
 
           <div className="grid grid-cols-2 gap-3 text-sm border-t border-white/[0.05] pt-4">
             <div>
-              <p className="text-[10px] text-gray-600 uppercase tracking-wide">Gas cost (USD)</p>
+              <p className="text-[10px] text-slate-600 uppercase tracking-wide">Gas cost (USD)</p>
               <p className="font-bold text-white mt-0.5">${fmt(gasCost, 4)}</p>
             </div>
             <div>
-              <p className="text-[10px] text-gray-600 uppercase tracking-wide">Your amount</p>
+              <p className="text-[10px] text-slate-600 uppercase tracking-wide">Your amount</p>
               <p className="font-bold text-white mt-0.5">${fmt(txNum)}</p>
             </div>
           </div>
@@ -325,7 +325,7 @@ export default function WorthItCalculator() {
             <div className="flex items-start gap-2 text-xs
               bg-white/[0.03] rounded-lg px-3 py-2.5 border border-white/[0.06]">
               <TrendingDown size={13} className="text-cyan-400 mt-0.5 shrink-0" />
-              <span className="text-gray-400">
+              <span className="text-slate-400">
                 Minimum transaction for ≤ 5% gas:&nbsp;
                 <span className="text-cyan-400 font-semibold">${fmt(result.minTxUSD)}</span>
               </span>
@@ -341,7 +341,7 @@ export default function WorthItCalculator() {
       ) : (
         !loading && (
           <div className="rounded-2xl border border-white/[0.04] bg-white/[0.02]
-            p-5 text-center text-gray-700 text-sm space-y-1">
+            p-5 text-center text-slate-700 text-sm space-y-1">
             <p className="text-2xl">💸</p>
             <p>Enter a transaction amount to evaluate the gas cost</p>
           </div>

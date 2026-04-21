@@ -36,7 +36,7 @@ function CustomTooltip({ active, payload }) {
   const { hour, gwei } = payload[0].payload
   const label = gwei < 20 ? '🟢 Cheap' : gwei < 50 ? '🟡 Average' : '🔴 Expensive'
   return (
-    <div className="bg-gray-900 border border-white/10 rounded-xl px-3 py-2 text-xs shadow-2xl">
+    <div className="bg-slate-900 border border-white/10 rounded-xl px-3 py-2 text-xs shadow-2xl">
       <p className="text-slate-400 mb-1">{HOURS[hour]}</p>
       <p className="text-white font-bold">{gwei.toFixed(1)} Gwei</p>
       <p className="text-slate-500 mt-0.5">{label}</p>

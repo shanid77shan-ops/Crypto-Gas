@@ -27,16 +27,16 @@ function ChainBadge({ chain, data, loading }) {
     <div className={`flex-1 min-w-0 rounded-xl border ${border} bg-white/[0.025] p-3 space-y-1`}>
       <div className="flex items-center gap-1.5">
         <span className="text-sm">{icon}</span>
-        <span className="text-[10px] text-gray-500 truncate">{name}</span>
+        <span className="text-[10px] text-slate-500 truncate">{name}</span>
       </div>
       {loading ? (
         <div className="h-4 w-14 rounded bg-white/5 animate-pulse" />
       ) : (
         <p className={`text-sm font-bold tabular-nums
-          ${status === 'ok' ? 'text-white' : 'text-gray-700'}`}>
+          ${status === 'ok' ? 'text-white' : 'text-slate-700'}`}>
           {valueStr}
           {status === 'ok' && (
-            <span className="text-[9px] text-gray-600 font-normal ml-1">USDT</span>
+            <span className="text-[9px] text-slate-600 font-normal ml-1">USDT</span>
           )}
         </p>
       )}
@@ -118,14 +118,14 @@ export default function WatchedWallet({ entry, onRemove, onLabelUpdate }) {
                   px-2 py-1 text-xs text-white focus:outline-none"
               />
               <button onClick={saveLabel}    className="text-emerald-400 hover:text-emerald-300"><Check size={13} /></button>
-              <button onClick={() => setEditing(false)} className="text-gray-600 hover:text-gray-400"><X size={13} /></button>
+              <button onClick={() => setEditing(false)} className="text-slate-600 hover:text-slate-400"><X size={13} /></button>
             </div>
           ) : (
             <div className="flex items-center gap-1.5">
               <p className="text-sm font-semibold text-white truncate">{label}</p>
               <button
                 onClick={() => { setDraft(label); setEditing(true) }}
-                className="opacity-0 group-hover:opacity-100 text-gray-600 hover:text-gray-300
+                className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-slate-300
                   transition-opacity"
               >
                 <Edit2 size={11} />
@@ -135,7 +135,7 @@ export default function WatchedWallet({ entry, onRemove, onLabelUpdate }) {
 
           {/* Address + network tags */}
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-mono text-[10px] text-gray-600">{shortenAddress(address)}</span>
+            <span className="font-mono text-[10px] text-slate-600">{shortenAddress(address)}</span>
             <div className="flex gap-1">
               {isEvm  && <span className="px-1.5 py-0.5 rounded-full bg-blue-500/10 text-blue-400 text-[9px] border border-blue-500/20">EVM</span>}
               {isTron && <span className="px-1.5 py-0.5 rounded-full bg-red-500/10 text-red-400 text-[9px] border border-red-500/20">TRON</span>}
@@ -148,7 +148,7 @@ export default function WatchedWallet({ entry, onRemove, onLabelUpdate }) {
           <a
             href={explorerUrl}
             target="_blank" rel="noopener noreferrer"
-            className="p-1.5 rounded-lg text-gray-700 hover:text-gray-300 hover:bg-white/5 transition-all"
+            className="p-1.5 rounded-lg text-slate-700 hover:text-slate-300 hover:bg-white/5 transition-all"
             title="View on explorer"
           >
             <ExternalLink size={13} />
@@ -156,14 +156,14 @@ export default function WatchedWallet({ entry, onRemove, onLabelUpdate }) {
           <button
             onClick={fetch}
             disabled={loading}
-            className="p-1.5 rounded-lg text-gray-600 hover:text-gray-300 hover:bg-white/5 transition-all"
+            className="p-1.5 rounded-lg text-slate-600 hover:text-slate-300 hover:bg-white/5 transition-all"
             title="Refresh balances"
           >
             <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
           </button>
           <button
             onClick={() => onRemove(id)}
-            className="p-1.5 rounded-lg text-gray-700 hover:text-red-400 hover:bg-red-500/10 transition-all"
+            className="p-1.5 rounded-lg text-slate-700 hover:text-red-400 hover:bg-red-500/10 transition-all"
             title="Remove from watchlist"
           >
             <Trash2 size={13} />
@@ -177,8 +177,8 @@ export default function WatchedWallet({ entry, onRemove, onLabelUpdate }) {
         <button
           onClick={fetch}
           className="w-full flex items-center justify-center gap-2 py-3 rounded-xl
-            border border-dashed border-white/[0.08] text-xs text-gray-600
-            hover:text-gray-300 hover:border-white/[0.15] hover:bg-white/[0.02]
+            border border-dashed border-white/[0.08] text-xs text-slate-600
+            hover:text-slate-300 hover:border-white/[0.15] hover:bg-white/[0.02]
             transition-all"
         >
           <Eye size={13} />
@@ -200,7 +200,7 @@ export default function WatchedWallet({ entry, onRemove, onLabelUpdate }) {
           {/* Total */}
           {total !== null && (
             <div className="flex items-center justify-between text-xs border-t border-white/[0.05] pt-2">
-              <span className="text-gray-600">Total USDT (visible chains)</span>
+              <span className="text-slate-600">Total USDT (visible chains)</span>
               <span className="font-bold text-white tabular-nums">
                 ${total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
@@ -208,7 +208,7 @@ export default function WatchedWallet({ entry, onRemove, onLabelUpdate }) {
           )}
 
           {fetchedAt && (
-            <p className="text-[10px] text-gray-700">
+            <p className="text-[10px] text-slate-700">
               Updated {fetchedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
             </p>
           )}
