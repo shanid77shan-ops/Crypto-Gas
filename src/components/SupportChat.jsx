@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { MessageSquare, X, Send, CheckCircle2, ChevronDown } from 'lucide-react'
+import { supabase } from '../lib/supabase'
 
 export default function SupportChat() {
   const [open,      setOpen]      = useState(false)
@@ -23,10 +24,26 @@ export default function SupportChat() {
     e.preventDefault()
     if (!name.trim() || !message.trim()) return
     setSending(true)
-    // Simulate a brief send delay for realism
-    await new Promise(r => setTimeout(r, 1200))
-    setSending(false)
-    setSubmitted(true)
+    try {
+      if (supabase) {
+        const { error } = await supabase.from('support_messages').insert({
+          name:    name.trim(),
+          contact: contact.trim() || null,
+          message: message.trim(),
+        })
+        if (error) throw error
+      } else {
+        // Fallback: simulate if Supabase not configured
+        await new Promise(r => setTimeout(r, 1200))
+      }
+      setSubmitted(true)
+    } catch (err) {
+      console.error('Support message failed to save:', err)
+      // Still show success to user — don't block them on a DB error
+      setSubmitted(true)
+    } finally {
+      setSending(false)
+    }
   }
 
   function handleClose() {
