@@ -30,7 +30,7 @@ function AmbientOrbs() {
         className="absolute inset-0 bg-[size:28px_28px]"
         style={{
           backgroundImage: `radial-gradient(${
-            dark ? 'rgba(255,30,30,0.09)' : 'rgba(220,20,20,0.05)'
+            dark ? 'rgba(247, 245, 245, 0.09)' : 'rgba(220,20,20,0.05)'
           } 1px, transparent 1px)`,
         }}
       />
