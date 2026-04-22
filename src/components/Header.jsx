@@ -7,9 +7,9 @@ export default function Header() {
 
   return (
     <header
-      className="sticky top-0 z-50 w-full backdrop-blur-2xl backdrop-saturate-150 border-b"
+      className="sticky top-0 z-50 w-full backdrop-blur-2xl border-b"
       style={{
-        backgroundColor: dark ? 'rgba(13,13,13,0.90)' : 'rgba(255,255,255,0.92)',
+        backgroundColor: dark ? 'rgba(0,0,0,0.92)' : 'rgba(255,255,255,0.96)',
         borderBottomColor: 'var(--color-border)',
       }}
     >
@@ -24,25 +24,30 @@ export default function Header() {
             onError={e => { e.target.style.display = 'none' }}
           />
           <div className="leading-none">
-            <p className="text-lg font-bold tracking-tight
-              bg-gradient-to-r from-white via-red-300 to-red-500
-              bg-clip-text text-transparent">
+            <p
+              className="text-xl font-black tracking-tight"
+              style={{
+                background: 'linear-gradient(90deg, #ffffff 0%, #ff4040 50%, #ff0000 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}
+            >
               Global Gas
             </p>
-            <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
+            <p className="text-xs font-bold mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
               Layer 2 Ecosystem · Live
             </p>
           </div>
         </div>
 
-        {/* Right side */}
+        {/* Right */}
         <div className="flex items-center gap-2">
 
           {/* Status pill */}
           <div
-            className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs border"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold border"
             style={{
-              backgroundColor: dark ? 'rgba(255,255,255,0.04)' : 'rgba(220,38,38,0.04)',
+              backgroundColor: dark ? 'rgba(255,30,30,0.10)' : 'rgba(220,20,20,0.07)',
               borderColor: 'var(--color-border)',
               color: 'var(--color-text-muted)',
             }}
@@ -56,12 +61,12 @@ export default function Header() {
           <button
             onClick={toggle}
             title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
-            className="flex items-center justify-center w-9 h-9 rounded-full border
-              transition-all active:scale-90 hover:border-red-500/60"
+            className="flex items-center justify-center w-9 h-9 rounded-full border font-black
+              transition-all active:scale-90"
             style={{
-              backgroundColor: dark ? 'rgba(220,38,38,0.12)' : 'rgba(220,38,38,0.08)',
+              backgroundColor: 'var(--red-dim)',
               borderColor: 'var(--color-border)',
-              color: dark ? '#fca5a5' : '#dc2626',
+              color: 'var(--red)',
             }}
           >
             {dark ? <Sun size={15} /> : <Moon size={15} />}

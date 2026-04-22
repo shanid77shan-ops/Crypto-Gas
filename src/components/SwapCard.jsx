@@ -115,8 +115,8 @@ const STATUS_STYLE = {
   exchanging: 'bg-amber-500/10 text-amber-400 border-amber-500/25',
   sending   : 'bg-violet-500/10 text-violet-400 border-violet-500/25',
   finished  : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25',
-  failed    : 'bg-red-500/10 text-red-400 border-red-500/25',
-  expired   : 'bg-red-500/10 text-red-400 border-red-500/25',
+  failed    : 'bg-red-500/25 text-red-300 border-red-400/60',
+  expired   : 'bg-red-500/25 text-red-300 border-red-400/60',
   refunded  : 'bg-orange-500/10 text-orange-400 border-orange-500/25',
 }
 function StatusBadge({ status }) {
@@ -261,7 +261,7 @@ function CoinRow({ coin, onSelect, active }) {
     <button
       onClick={() => onSelect(coin)}
       className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg transition-colors text-left
-        ${active ? 'bg-red-600/15 text-red-300' : 'hover:bg-white/[0.05] text-slate-200'}`}
+        ${active ? 'bg-red-500/30 text-white font-bold' : 'hover:bg-white/[0.05] text-slate-200'}`}
     >
       <CoinIcon ticker={coin.ticker} size={22} />
       <div className="flex-1 min-w-0">
@@ -274,29 +274,31 @@ function CoinRow({ coin, onSelect, active }) {
 
 // ── Fee breakdown ─────────────────────────────────────────────────────────────
 
+const COMMISSION_PCT = 0.5   // Global Gas service fee %
+
 function FeeBreakdown({ amount, estimate, fromCoin, toCoin }) {
   const [open, setOpen] = useState(false)
   if (!estimate?.estimatedAmount || !amount) return null
 
-  const sent     = parseFloat(amount)
-  const received = parseFloat(estimate.estimatedAmount)
-  const feeCoin  = sent - received          // in fromCoin units (only valid same-coin pairs like USDT→USDT)
-  const feeUSD   = feeCoin                  // 1:1 for stablecoins; rough for others
-  const feePct   = ((sent - received) / sent) * 100
+  const sent        = parseFloat(amount)
+  const received    = parseFloat(estimate.estimatedAmount)
+  const feePct      = ((sent - received) / sent) * 100
+
+  // Isolate our commission vs third-party costs
+  const networkAndExchangePct = Math.max(0, feePct - COMMISSION_PCT)
 
   // Detect high-gas source networks
-  const fromNet    = fromCoin?.network?.toLowerCase() ?? ''
-  const toNet      = toCoin?.network?.toLowerCase()   ?? ''
-  const isEthFrom  = fromNet.includes('eth') || fromCoin?.ticker?.includes('erc20')
-  const isEthTo    = toNet.includes('eth')   || toCoin?.ticker?.includes('erc20')
-  const highGas    = isEthFrom || isEthTo
+  const fromNet   = fromCoin?.network?.toLowerCase() ?? ''
+  const toNet     = toCoin?.network?.toLowerCase()   ?? ''
+  const isEthFrom = fromNet.includes('eth') || fromCoin?.ticker?.includes('erc20')
+  const isEthTo   = toNet.includes('eth')   || toCoin?.ticker?.includes('erc20')
+  const highGas   = isEthFrom || isEthTo
 
-  // colour the cost indicator
   const feeColor = feePct > 5 ? 'text-rose-400' : feePct > 2 ? 'text-amber-400' : 'text-slate-400'
 
   return (
     <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
-      {/* Summary row — always visible */}
+      {/* Summary row */}
       <button
         onClick={() => setOpen(o => !o)}
         className="w-full flex items-center justify-between px-4 py-2.5
@@ -331,17 +333,25 @@ function FeeBreakdown({ amount, estimate, fromCoin, toCoin }) {
 
           <div className="border-t border-white/[0.05]" />
 
-          {/* Exchange spread */}
+          {/* Service fee — our commission */}
           <div className="flex justify-between text-xs">
-            <span className="text-slate-500">ChangeNOW spread</span>
-            <span className="text-slate-400 font-mono">~0.5 – 1%</span>
+            <span className="flex items-center gap-1.5 text-slate-500">
+              Global Gas service fee
+              <span className="text-[9px] px-1.5 py-0.5 rounded-full
+                bg-red-500/30 border border-red-400/70 text-white font-black">
+                {COMMISSION_PCT}%
+              </span>
+            </span>
+            <span className="text-red-300 font-mono font-black">
+              {fmt(sent * COMMISSION_PCT / 100, 4)} {fromCoin?.ticker?.toUpperCase()}
+            </span>
           </div>
 
-          {/* Network gas */}
+          {/* ChangeNOW + network */}
           <div className="flex justify-between text-xs">
-            <span className="text-slate-500">Network fees (gas)</span>
+            <span className="text-slate-500">ChangeNOW + network</span>
             <span className={`font-mono ${highGas ? 'text-amber-400' : 'text-slate-400'}`}>
-              {highGas ? 'High (ETH)' : 'Low'}
+              ~{fmt(networkAndExchangePct, 2)}%{highGas ? ' (ETH gas)' : ''}
             </span>
           </div>
 
@@ -380,9 +390,9 @@ function ProgressBar({ step, failed }) {
             <div key={label} className="flex flex-col items-center gap-1 flex-1">
               <div className={`w-7 h-7 rounded-full flex items-center justify-center
                 text-xs font-bold transition-all duration-500 border-2
-                ${isError  ? 'bg-red-500/20 border-red-500 text-red-400'
+                ${isError  ? 'bg-red-500/35 border-red-400 text-white'
                 : done     ? 'bg-emerald-500/20 border-emerald-400 text-emerald-400'
-                : active   ? 'bg-red-500/15 border-red-400 text-red-300 ring-2 ring-red-500/25'
+                : active   ? 'bg-red-500/35 border-red-400 text-white ring-2 ring-red-400/50'
                 :             'bg-white/[0.03] border-slate-700 text-slate-600'}`}
               >
                 {isError  ? <XCircle      size={14} />
@@ -391,7 +401,7 @@ function ProgressBar({ step, failed }) {
                 :           i + 1}
               </div>
               <span className={`text-[9px] uppercase tracking-wide font-semibold
-                ${isError ? 'text-red-400' : done ? 'text-emerald-400' : active ? 'text-red-300' : 'text-slate-600'}`}>
+                ${isError ? 'text-red-300 font-black' : done ? 'text-emerald-400 font-black' : active ? 'text-white font-black' : 'text-slate-600'}`}>
                 {label}
               </span>
             </div>
@@ -419,10 +429,10 @@ function DepositPanel({ tx, status, step, failed }) {
       {status && (
         <div className={`text-center text-xs font-semibold py-2 rounded-lg border
           ${failed
-            ? 'bg-red-500/10 border-red-500/25 text-red-400'
+            ? 'bg-red-500/25 border-red-400/60 text-red-300 font-black'
             : step === 4
               ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400'
-              : 'bg-red-500/8 border-red-500/20 text-red-300'}`}
+              : 'bg-red-500/20 border-red-400/50 text-white font-bold'}`}
         >
           {failed ? `Transaction ${status.status}` : step === 4 ? 'Swap complete!' : `Status: ${status.status}…`}
         </div>
@@ -728,14 +738,14 @@ export default function SwapCard() {
   return (
     <div className="glass-card p-6 space-y-5 relative overflow-hidden">
       {/* Neon bleed */}
-      <div className="pointer-events-none absolute -top-20 -right-20 w-64 h-64 rounded-full bg-red-700/10 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-20 -left-20 w-64 h-64 rounded-full bg-red-900/8 blur-3xl" />
+      <div className="pointer-events-none absolute -top-20 -right-20 w-64 h-64 rounded-full bg-red-600/25 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-20 -left-20 w-64 h-64 rounded-full bg-red-700/20 blur-3xl" />
 
       {/* Header */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="p-1.5 rounded-lg bg-red-500/10 border border-red-500/20">
+            <div className="p-1.5 rounded-lg bg-red-500/25 border border-red-500/60">
               <ArrowUpDown size={14} className="text-red-400" />
             </div>
             <div>
@@ -767,7 +777,7 @@ export default function SwapCard() {
               onClick={() => setTab(t.key)}
               className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all
                 ${tab === t.key
-                  ? 'bg-red-600/20 border border-red-500/30 text-red-300'
+                  ? 'bg-red-500/30 border border-red-400/70 text-white font-black'
                   : 'text-slate-500 hover:text-slate-300'}`}
             >
               {t.label}
@@ -802,8 +812,8 @@ export default function SwapCard() {
                 placeholder="Amount to send"
                 className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl
                   pl-4 pr-24 py-3.5 text-sm text-slate-100 placeholder-slate-600
-                  focus:outline-none focus:ring-2 focus:ring-red-500/50
-                  focus:border-red-500/40 transition-all"
+                  focus:outline-none focus:ring-2 focus:ring-red-500/70
+                  focus:border-red-500/80 transition-all"
               />
               {fromCoin && (
                 <span className="absolute right-4 top-1/2 -translate-y-1/2
@@ -825,7 +835,7 @@ export default function SwapCard() {
               onClick={handleFlip}
               className="flex items-center justify-center w-9 h-9 rounded-full
                 bg-white/[0.05] border border-white/[0.10] text-slate-400
-                hover:bg-red-600/15 hover:border-red-500/40 hover:text-red-300
+                hover:bg-red-500/25 hover:border-red-400/70 hover:text-white
                 active:scale-90 transition-all"
             >
               <ArrowUpDown size={15} />
@@ -881,8 +891,8 @@ export default function SwapCard() {
               placeholder={`${toCoin?.ticker?.toUpperCase() ?? 'Coin'} address`}
               className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl
                 px-4 py-3 text-sm font-mono text-slate-100 placeholder-slate-600
-                focus:outline-none focus:ring-2 focus:ring-red-500/50
-                focus:border-red-500/40 transition-all"
+                focus:outline-none focus:ring-2 focus:ring-red-500/70
+                focus:border-red-500/80 transition-all"
             />
           </div>
 
@@ -917,10 +927,10 @@ export default function SwapCard() {
             onClick={handleSwap}
             disabled={swapping || !amount || !address || belowMin || !fromCoin || !toCoin}
             className="w-full py-3.5 rounded-xl text-sm font-bold transition-all
-              bg-gradient-to-r from-red-600 to-red-700
-              hover:from-red-500 hover:to-red-600
+              bg-gradient-to-r from-red-500 to-red-600
+              hover:from-red-400 hover:to-red-500
               disabled:opacity-40 disabled:cursor-not-allowed
-              active:scale-[0.98] text-white shadow-lg shadow-red-900/20"
+              active:scale-[0.98] text-white shadow-lg shadow-red-600/50"
           >
             {swapping ? (
               <span className="flex items-center justify-center gap-2">
