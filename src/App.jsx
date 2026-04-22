@@ -1,4 +1,5 @@
-import Header          from './components/Header'
+import { ThemeProvider, useTheme } from './lib/ThemeContext'
+import Header           from './components/Header'
 import GasTrafficLight  from './components/GasTrafficLight'
 import WalletLookup     from './components/WalletLookup'
 import GasHistory       from './components/GasHistory'
@@ -7,78 +8,110 @@ import GasHeatmap       from './components/GasHeatmap'
 import WatchlistManager from './components/WatchlistManager'
 import SwapCard         from './components/SwapCard'
 
-export default function App() {
+// ── Theme-aware ambient orbs ───────────────────────────────────────────────────
+
+function AmbientOrbs() {
+  const { theme } = useTheme()
+  const dark = theme === 'dark'
+
   return (
-    /* slate-950 base ─────────────────────────────────────────────────────── */
-    <div className="min-h-screen flex flex-col bg-slate-950 relative">
+    <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10">
+      {dark ? (
+        <>
+          {/* Top-left — vivid indigo bloom */}
+          <div className="absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full
+            bg-indigo-600/14 blur-[160px]" />
+          {/* Bottom-right — deep cyan bloom */}
+          <div className="absolute bottom-0 right-0 w-[520px] h-[520px] rounded-full
+            bg-cyan-500/10 blur-[140px]" />
+          {/* Mid — violet accent */}
+          <div className="absolute top-1/2 left-1/3 w-[400px] h-[400px] rounded-full
+            bg-violet-600/10 blur-[120px]" />
+          {/* Extra — indigo-rose hint top-right */}
+          <div className="absolute -top-16 right-1/4 w-[300px] h-[300px] rounded-full
+            bg-blue-600/8 blur-[100px]" />
+        </>
+      ) : (
+        <>
+          {/* Top-left — light indigo */}
+          <div className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full
+            bg-indigo-300/25 blur-[130px]" />
+          {/* Bottom-right — light cyan */}
+          <div className="absolute bottom-0 right-0 w-[460px] h-[460px] rounded-full
+            bg-violet-300/20 blur-[120px]" />
+          {/* Mid — soft blue */}
+          <div className="absolute top-1/2 left-1/3 w-[360px] h-[360px] rounded-full
+            bg-blue-200/30 blur-[100px]" />
+        </>
+      )}
 
-      {/* ── Fixed ambient orbs (non-interactive decoration) ────────────── */}
-      <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10">
-        {/* Top-left indigo bloom */}
-        <div className="absolute -top-32 -left-32 w-[520px] h-[520px] rounded-full
-          bg-indigo-700/10 blur-[140px]" />
-        {/* Bottom-right cyan bloom */}
-        <div className="absolute bottom-0 right-0 w-[480px] h-[480px] rounded-full
-          bg-cyan-800/8 blur-[120px]" />
-        {/* Mid-page violet hint */}
-        <div className="absolute top-1/2 left-1/3 w-[360px] h-[360px] rounded-full
-          bg-violet-900/8 blur-[100px]" />
-        {/* Subtle dot-grid overlay */}
-        <div className="absolute inset-0
-          bg-[radial-gradient(rgba(148,163,184,0.04)_1px,transparent_1px)]
-          bg-[size:32px_32px]" />
-      </div>
+      {/* Dot-grid (both themes) */}
+      <div className={`absolute inset-0
+        bg-[radial-gradient(${dark ? 'rgba(99,102,241,0.06)' : 'rgba(99,102,241,0.07)'}
+        _1px,transparent_1px)]
+        bg-[size:32px_32px]`} />
+    </div>
+  )
+}
 
-      {/* ── Sticky header ────────────────────────────────────────────────── */}
+// ── App shell ──────────────────────────────────────────────────────────────────
+
+function AppShell() {
+  return (
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: 'var(--color-bg)' }}>
+      <AmbientOrbs />
+
       <Header />
 
-      {/* ── Page content ─────────────────────────────────────────────────── */}
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-6">
 
-        {/* Row 0 ─ ChangeNOW USDT Cross-Chain Swap (full width) */}
-        <section aria-label="USDT cross-chain swap">
+        {/* Row 0 — Cross-Chain Swap (full width) */}
+        <section aria-label="Cross-chain swap">
           <SwapCard />
         </section>
 
-        {/* Row 1 ─ Gas indicator + Worth It Calculator
-            Mobile : single column (stacks)
-            Desktop: 280px traffic light | remaining width for calculator   */}
+        {/* Row 1 — Gas indicator + Worth It Calculator */}
         <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
           <GasTrafficLight />
           <WorthItCalculator />
         </div>
 
-        {/* Row 2 ─ Watch-Only Portfolio (Rule 3, full width) */}
+        {/* Row 2 — Watch-Only Portfolio */}
         <section aria-label="Watch-only portfolio">
           <WatchlistManager />
         </section>
 
-        {/* Row 3 ─ One-shot multi-chain lookup */}
+        {/* Row 3 — Multi-chain lookup */}
         <section aria-label="Multi-chain USDT lookup">
           <WalletLookup />
         </section>
 
-        {/* Row 4 ─ Gas heatmap + recharts bar chart */}
+        {/* Row 4 — Gas heatmap */}
         <section aria-label="Gas heatmap">
           <GasHeatmap />
         </section>
 
-        {/* Row 5 ─ Historical gas readings (only visible when Supabase is live) */}
+        {/* Row 5 — Historical gas readings */}
         <GasHistory />
 
       </main>
 
-      {/* ── Footer ─────────────────────────────────────────────────────────── */}
-      <footer className="text-center py-5 text-xs text-slate-600
-        border-t border-slate-800/60">
-        <span className="text-slate-400 font-semibold">Global Gas</span>
-        <span className="mx-2 text-slate-700">·</span>
-        Powered by&nbsp;
-        <span className="text-slate-500">Alchemy · TronGrid · CryptoCompare · ChangeNOW · LI.FI · Supabase</span>
-        <span className="mx-2 text-slate-700">|</span>
+      <footer className="text-center py-5 text-xs border-t"
+        style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-muted)' }}>
+        <span className="font-semibold" style={{ color: 'var(--color-text-base)' }}>Global Gas</span>
+        <span className="mx-2 opacity-30">·</span>
+        Powered by Alchemy · TronGrid · CryptoCompare · ChangeNOW · LI.FI · Supabase
+        <span className="mx-2 opacity-30">|</span>
         Gas refreshes every 60 s
       </footer>
-
     </div>
+  )
+}
+
+export default function App() {
+  return (
+    <ThemeProvider>
+      <AppShell />
+    </ThemeProvider>
   )
 }
