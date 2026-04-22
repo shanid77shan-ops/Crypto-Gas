@@ -261,7 +261,7 @@ function CoinRow({ coin, onSelect, active }) {
     <button
       onClick={() => onSelect(coin)}
       className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg transition-colors text-left
-        ${active ? 'bg-violet-600/20 text-violet-300' : 'hover:bg-white/[0.05] text-slate-200'}`}
+        ${active ? 'bg-red-600/15 text-red-300' : 'hover:bg-white/[0.05] text-slate-200'}`}
     >
       <CoinIcon ticker={coin.ticker} size={22} />
       <div className="flex-1 min-w-0">
@@ -382,7 +382,7 @@ function ProgressBar({ step, failed }) {
                 text-xs font-bold transition-all duration-500 border-2
                 ${isError  ? 'bg-red-500/20 border-red-500 text-red-400'
                 : done     ? 'bg-emerald-500/20 border-emerald-400 text-emerald-400'
-                : active   ? 'bg-indigo-500/20 border-indigo-400 text-indigo-300 ring-2 ring-indigo-500/30'
+                : active   ? 'bg-red-500/15 border-red-400 text-red-300 ring-2 ring-red-500/25'
                 :             'bg-white/[0.03] border-slate-700 text-slate-600'}`}
               >
                 {isError  ? <XCircle      size={14} />
@@ -391,7 +391,7 @@ function ProgressBar({ step, failed }) {
                 :           i + 1}
               </div>
               <span className={`text-[9px] uppercase tracking-wide font-semibold
-                ${isError ? 'text-red-400' : done ? 'text-emerald-400' : active ? 'text-indigo-300' : 'text-slate-600'}`}>
+                ${isError ? 'text-red-400' : done ? 'text-emerald-400' : active ? 'text-red-300' : 'text-slate-600'}`}>
                 {label}
               </span>
             </div>
@@ -401,7 +401,7 @@ function ProgressBar({ step, failed }) {
       <div className="relative h-0.5 bg-slate-800 rounded-full mx-3.5 -mt-7 -z-10">
         <div
           className={`absolute inset-y-0 left-0 rounded-full transition-all duration-700
-            ${failed ? 'bg-red-500' : 'bg-gradient-to-r from-indigo-500 to-emerald-400'}`}
+            ${failed ? 'bg-red-500' : 'bg-gradient-to-r from-red-500 to-emerald-400'}`}
           style={{ width: `${Math.max(0, Math.min(step / (STEPS.length - 1), 1)) * 100}%` }}
         />
       </div>
@@ -422,7 +422,7 @@ function DepositPanel({ tx, status, step, failed }) {
             ? 'bg-red-500/10 border-red-500/25 text-red-400'
             : step === 4
               ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400'
-              : 'bg-indigo-500/10 border-indigo-500/25 text-indigo-300'}`}
+              : 'bg-red-500/8 border-red-500/20 text-red-300'}`}
         >
           {failed ? `Transaction ${status.status}` : step === 4 ? 'Swap complete!' : `Status: ${status.status}…`}
         </div>
@@ -469,7 +469,7 @@ function DepositPanel({ tx, status, step, failed }) {
           <a
             href={`https://changenow.io/exchange/txs/${tx.id}`}
             target="_blank" rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
+            className="flex items-center gap-1.5 text-xs text-red-400 hover:text-red-300 transition-colors"
           >
             View on ChangeNOW <ExternalLink size={10} />
           </a>
@@ -567,7 +567,7 @@ function HistoryPanel({ entries, onClear }) {
                 <a
                   href={`https://changenow.io/exchange/txs/${entry.id}`}
                   target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 text-[11px] text-indigo-400 hover:text-indigo-300 transition-colors pt-0.5"
+                  className="flex items-center gap-1.5 text-[11px] text-red-400 hover:text-red-300 transition-colors pt-0.5"
                 >
                   Track on ChangeNOW <ExternalLink size={10} />
                 </a>
@@ -728,15 +728,15 @@ export default function SwapCard() {
   return (
     <div className="glass-card p-6 space-y-5 relative overflow-hidden">
       {/* Neon bleed */}
-      <div className="pointer-events-none absolute -top-20 -right-20 w-64 h-64 rounded-full bg-violet-600/8 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-20 -left-20 w-64 h-64 rounded-full bg-cyan-600/8 blur-3xl" />
+      <div className="pointer-events-none absolute -top-20 -right-20 w-64 h-64 rounded-full bg-red-700/10 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-20 -left-20 w-64 h-64 rounded-full bg-red-900/8 blur-3xl" />
 
       {/* Header */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="p-1.5 rounded-lg bg-violet-500/15 border border-violet-500/25">
-              <ArrowUpDown size={14} className="text-violet-400" />
+            <div className="p-1.5 rounded-lg bg-red-500/10 border border-red-500/20">
+              <ArrowUpDown size={14} className="text-red-400" />
             </div>
             <div>
               <h2 className="text-base font-bold text-slate-100">Cross-Chain Swap</h2>
@@ -767,7 +767,7 @@ export default function SwapCard() {
               onClick={() => setTab(t.key)}
               className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all
                 ${tab === t.key
-                  ? 'bg-violet-600/30 border border-violet-500/30 text-violet-300'
+                  ? 'bg-red-600/20 border border-red-500/30 text-red-300'
                   : 'text-slate-500 hover:text-slate-300'}`}
             >
               {t.label}
@@ -802,8 +802,8 @@ export default function SwapCard() {
                 placeholder="Amount to send"
                 className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl
                   pl-4 pr-24 py-3.5 text-sm text-slate-100 placeholder-slate-600
-                  focus:outline-none focus:ring-2 focus:ring-violet-500/60
-                  focus:border-violet-500/40 transition-all"
+                  focus:outline-none focus:ring-2 focus:ring-red-500/50
+                  focus:border-red-500/40 transition-all"
               />
               {fromCoin && (
                 <span className="absolute right-4 top-1/2 -translate-y-1/2
@@ -825,7 +825,7 @@ export default function SwapCard() {
               onClick={handleFlip}
               className="flex items-center justify-center w-9 h-9 rounded-full
                 bg-white/[0.05] border border-white/[0.10] text-slate-400
-                hover:bg-violet-600/20 hover:border-violet-500/40 hover:text-violet-300
+                hover:bg-red-600/15 hover:border-red-500/40 hover:text-red-300
                 active:scale-90 transition-all"
             >
               <ArrowUpDown size={15} />
@@ -881,8 +881,8 @@ export default function SwapCard() {
               placeholder={`${toCoin?.ticker?.toUpperCase() ?? 'Coin'} address`}
               className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl
                 px-4 py-3 text-sm font-mono text-slate-100 placeholder-slate-600
-                focus:outline-none focus:ring-2 focus:ring-violet-500/60
-                focus:border-violet-500/40 transition-all"
+                focus:outline-none focus:ring-2 focus:ring-red-500/50
+                focus:border-red-500/40 transition-all"
             />
           </div>
 
@@ -900,7 +900,7 @@ export default function SwapCard() {
               placeholder={`Refund address (${fromCoin?.ticker?.toUpperCase() ?? 'source'} network)`}
               className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl
                 px-4 py-3 text-sm font-mono text-slate-100 placeholder-slate-600
-                focus:outline-none focus:ring-2 focus:ring-violet-500/50 transition-all"
+                focus:outline-none focus:ring-2 focus:ring-red-500/40 transition-all"
             />
           )}
 
@@ -917,10 +917,10 @@ export default function SwapCard() {
             onClick={handleSwap}
             disabled={swapping || !amount || !address || belowMin || !fromCoin || !toCoin}
             className="w-full py-3.5 rounded-xl text-sm font-bold transition-all
-              bg-gradient-to-r from-violet-600 to-indigo-600
-              hover:from-violet-500 hover:to-indigo-500
+              bg-gradient-to-r from-red-600 to-red-700
+              hover:from-red-500 hover:to-red-600
               disabled:opacity-40 disabled:cursor-not-allowed
-              active:scale-[0.98] text-white shadow-lg shadow-violet-900/30"
+              active:scale-[0.98] text-white shadow-lg shadow-red-900/20"
           >
             {swapping ? (
               <span className="flex items-center justify-center gap-2">
