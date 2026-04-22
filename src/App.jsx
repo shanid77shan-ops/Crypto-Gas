@@ -1,13 +1,14 @@
-import { ThemeProvider, useTheme } from './lib/ThemeContext'
-import Header            from './components/Header'
-import GasTrafficLight   from './components/GasTrafficLight'
-import WalletLookup      from './components/WalletLookup'
-import GasHistory        from './components/GasHistory'
-import WorthItCalculator from './components/WorthItCalculator'
-import GasHeatmap        from './components/GasHeatmap'
-import WatchlistManager  from './components/WatchlistManager'
-import SwapCard          from './components/SwapCard'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { ThemeProvider, useTheme }       from './lib/ThemeContext'
+import Header                            from './components/Header'
+import { Sidebar, BottomNav }            from './components/Navigation'
+import SupportChat                        from './components/SupportChat'
+import Home                              from './pages/Home'
+import Swap                              from './pages/Swap'
+import Gas                               from './pages/Gas'
+import Portfolio                         from './pages/Portfolio'
 
+// ── Ambient background orbs ───────────────────────────────────────────────────
 function AmbientOrbs() {
   const { theme } = useTheme()
   const dark = theme === 'dark'
@@ -15,53 +16,67 @@ function AmbientOrbs() {
     <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10">
       {dark ? (
         <>
-          <div className="absolute -top-48 -left-48 w-[700px] h-[700px] rounded-full
-            bg-red-600/20 blur-[200px]" />
-          <div className="absolute -bottom-32 -right-32 w-[600px] h-[600px] rounded-full
-            bg-red-700/15 blur-[180px]" />
-          <div className="absolute top-1/2 left-1/2 w-[400px] h-[400px] rounded-full
-            bg-red-800/10 blur-[150px]" />
+          <div className="absolute -top-48 -left-48 w-[700px] h-[700px] rounded-full bg-red-600/18 blur-[220px]" />
+          <div className="absolute -bottom-32 -right-32 w-[600px] h-[600px] rounded-full bg-red-700/12 blur-[190px]" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full bg-red-900/8 blur-[160px]" />
         </>
       ) : (
         <>
-          <div className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full
-            bg-red-200/50 blur-[120px]" />
-          <div className="absolute -bottom-24 -right-24 w-[460px] h-[460px] rounded-full
-            bg-red-100/60 blur-[100px]" />
+          <div className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full bg-red-200/50 blur-[130px]" />
+          <div className="absolute -bottom-24 -right-24 w-[460px] h-[460px] rounded-full bg-red-100/60 blur-[110px]" />
         </>
       )}
       <div
         className="absolute inset-0 bg-[size:28px_28px]"
         style={{
-          backgroundImage: `radial-gradient(${dark
-            ? 'rgba(255,30,30,0.10)'
-            : 'rgba(220,20,20,0.06)'} 1px, transparent 1px)`,
+          backgroundImage: `radial-gradient(${
+            dark ? 'rgba(255,30,30,0.09)' : 'rgba(220,20,20,0.05)'
+          } 1px, transparent 1px)`,
         }}
       />
     </div>
   )
 }
 
+// ── App shell (needs to be inside BrowserRouter for NavLink) ─────────────────
 function AppShell() {
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: 'var(--color-bg)' }}>
       <AmbientOrbs />
+
+      {/* Sticky top header */}
       <Header />
 
-      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-6">
-        <section aria-label="Cross-chain swap"><SwapCard /></section>
-        <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
-          <GasTrafficLight />
-          <WorthItCalculator />
-        </div>
-        <section aria-label="Watch-only portfolio"><WatchlistManager /></section>
-        <section aria-label="Multi-chain lookup"><WalletLookup /></section>
-        <section aria-label="Gas heatmap"><GasHeatmap /></section>
-        <GasHistory />
-      </main>
+      {/* Body = sidebar + page content */}
+      <div className="flex flex-1 w-full max-w-7xl mx-auto px-0 lg:px-4">
 
+        {/* Desktop sidebar */}
+        <Sidebar />
+
+        {/* Page content */}
+        <main className="flex-1 min-w-0 px-4 sm:px-6 lg:px-8 py-6 sm:py-8
+          pb-24 lg:pb-10">
+          <Routes>
+            <Route path="/"          element={<Home />}      />
+            <Route path="/swap"      element={<Swap />}      />
+            <Route path="/gas"       element={<Gas />}       />
+            <Route path="/portfolio" element={<Portfolio />} />
+            {/* Fallback → Home */}
+            <Route path="*"          element={<Home />}      />
+          </Routes>
+        </main>
+
+      </div>
+
+      {/* Mobile bottom nav */}
+      <BottomNav />
+
+      {/* Support chat */}
+      <SupportChat />
+
+      {/* Footer */}
       <footer
-        className="text-center py-5 text-xs font-bold border-t"
+        className="hidden lg:block text-center py-4 text-xs font-bold border-t"
         style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-muted)' }}
       >
         <span className="font-black" style={{ color: 'var(--red)' }}>Global Gas</span>
@@ -74,10 +89,13 @@ function AppShell() {
   )
 }
 
+// ── Root ──────────────────────────────────────────────────────────────────────
 export default function App() {
   return (
-    <ThemeProvider>
-      <AppShell />
-    </ThemeProvider>
+    <BrowserRouter>
+      <ThemeProvider>
+        <AppShell />
+      </ThemeProvider>
+    </BrowserRouter>
   )
 }
