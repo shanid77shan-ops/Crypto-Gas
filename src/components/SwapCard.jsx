@@ -3,7 +3,7 @@ import { QRCodeSVG } from 'qrcode.react'
 import {
   ArrowUpDown, Copy, CheckCheck, Loader2, Search,
   AlertCircle, CheckCircle2, XCircle, RefreshCw,
-  ExternalLink, History, ArrowRight, Trash2, ChevronDown, X,
+  ExternalLink, History, ArrowRight, Trash2, ChevronDown, X, Info,
 } from 'lucide-react'
 import {
   STEPS, STATUS_STEP, POPULAR_TICKERS, coinImageUrl,
@@ -269,6 +269,100 @@ function CoinRow({ coin, onSelect, active }) {
         <p className="text-[10px] text-slate-500 truncate">{coin.name}</p>
       </div>
     </button>
+  )
+}
+
+// ── Fee breakdown ─────────────────────────────────────────────────────────────
+
+function FeeBreakdown({ amount, estimate, fromCoin, toCoin }) {
+  const [open, setOpen] = useState(false)
+  if (!estimate?.estimatedAmount || !amount) return null
+
+  const sent     = parseFloat(amount)
+  const received = parseFloat(estimate.estimatedAmount)
+  const feeCoin  = sent - received          // in fromCoin units (only valid same-coin pairs like USDT→USDT)
+  const feeUSD   = feeCoin                  // 1:1 for stablecoins; rough for others
+  const feePct   = ((sent - received) / sent) * 100
+
+  // Detect high-gas source networks
+  const fromNet    = fromCoin?.network?.toLowerCase() ?? ''
+  const toNet      = toCoin?.network?.toLowerCase()   ?? ''
+  const isEthFrom  = fromNet.includes('eth') || fromCoin?.ticker?.includes('erc20')
+  const isEthTo    = toNet.includes('eth')   || toCoin?.ticker?.includes('erc20')
+  const highGas    = isEthFrom || isEthTo
+
+  // colour the cost indicator
+  const feeColor = feePct > 5 ? 'text-rose-400' : feePct > 2 ? 'text-amber-400' : 'text-slate-400'
+
+  return (
+    <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
+      {/* Summary row — always visible */}
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between px-4 py-2.5
+          hover:bg-white/[0.03] transition-colors text-left"
+      >
+        <span className="flex items-center gap-1.5 text-[11px] text-slate-500">
+          <Info size={11} className="shrink-0" /> Fee breakdown
+        </span>
+        <div className="flex items-center gap-2">
+          <span className={`text-[11px] font-bold ${feeColor}`}>
+            −{fmt(Math.abs(feePct), 2)}%
+          </span>
+          <ChevronDown size={12} className={`text-slate-600 transition-transform ${open ? 'rotate-180' : ''}`} />
+        </div>
+      </button>
+
+      {/* Expanded rows */}
+      {open && (
+        <div className="border-t border-white/[0.05] px-4 py-3 space-y-2.5">
+
+          {/* You send */}
+          <div className="flex justify-between text-xs">
+            <span className="text-slate-500">You send</span>
+            <span className="text-slate-200 font-mono">{fmt(sent, 4)} {fromCoin?.ticker?.toUpperCase()}</span>
+          </div>
+
+          {/* You receive */}
+          <div className="flex justify-between text-xs">
+            <span className="text-slate-500">You receive</span>
+            <span className="text-emerald-400 font-mono font-bold">{fmt(received, 4)} {toCoin?.ticker?.toUpperCase()}</span>
+          </div>
+
+          <div className="border-t border-white/[0.05]" />
+
+          {/* Exchange spread */}
+          <div className="flex justify-between text-xs">
+            <span className="text-slate-500">ChangeNOW spread</span>
+            <span className="text-slate-400 font-mono">~0.5 – 1%</span>
+          </div>
+
+          {/* Network gas */}
+          <div className="flex justify-between text-xs">
+            <span className="text-slate-500">Network fees (gas)</span>
+            <span className={`font-mono ${highGas ? 'text-amber-400' : 'text-slate-400'}`}>
+              {highGas ? 'High (ETH)' : 'Low'}
+            </span>
+          </div>
+
+          {/* Total cost */}
+          <div className="flex justify-between text-xs font-bold border-t border-white/[0.05] pt-2">
+            <span className="text-slate-400">Total cost</span>
+            <span className={feeColor}>{fmt(Math.abs(feePct), 2)}% of amount</span>
+          </div>
+
+          {/* Gas warning */}
+          {highGas && (
+            <div className="rounded-lg bg-amber-500/8 border border-amber-500/20 px-3 py-2 text-[10px] text-amber-300 leading-relaxed">
+              {isEthFrom
+                ? 'Ethereum gas fees are included in this rate. Fees are fixed regardless of amount — larger swaps are more cost-efficient.'
+                : 'The destination network (Ethereum) charges gas to receive funds. This is included in the rate shown.'}
+              <span className="block mt-1 text-amber-500">Tip: swap larger amounts to lower the % cost.</span>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -767,6 +861,14 @@ export default function SwapCard() {
               <p className="text-xs text-slate-700">Enter amount above</p>
             )}
           </div>
+
+          {/* Fee breakdown */}
+          <FeeBreakdown
+            amount={amount}
+            estimate={estimate}
+            fromCoin={fromCoin}
+            toCoin={toCoin}
+          />
 
           {/* Receiving address */}
           <div className="space-y-2">
