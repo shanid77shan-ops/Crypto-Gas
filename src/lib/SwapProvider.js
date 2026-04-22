@@ -1,30 +1,16 @@
 /**
- * SwapProvider.js
- * ─────────────────────────────────────────────────────────────────────────────
- * ChangeNOW API wrapper — all calls go through Vercel serverless proxies
- * so the API key never appears in browser requests.
+ * SwapProvider.js — ChangeNOW API wrapper (all calls through Vercel proxies)
  *
- *   /api/cn-estimate  →  GET  /v1/exchange-amount/{amount}/{pair}
- *   /api/cn-min       →  GET  /v1/min-amount
- *   /api/cn-swap      →  POST /v1/transactions
- *   /api/cn-status    →  GET  /v1/transactions/{id}/status
+ *   /api/cn-currencies  →  GET  /v1/currencies
+ *   /api/cn-estimate    →  GET  /v1/exchange-amount/{amount}/{pair}
+ *   /api/cn-min         →  GET  /v1/min-amount
+ *   /api/cn-swap        →  POST /v1/transactions
+ *   /api/cn-status      →  GET  /v1/transactions/{id}
  */
 
 import axios from 'axios'
 
 const api = axios.create({ timeout: 15_000 })
-
-// ── Pair constants ────────────────────────────────────────────────────────────
-
-export const PAIRS = {
-  TRC20: 'usdttrc20',
-  ERC20: 'usdterc20',
-}
-
-export const PAIR_LABELS = {
-  usdttrc20: { label: 'USDT (TRC-20)', short: 'USDT·TRC20', network: 'TRON',     color: 'text-red-400'  },
-  usdterc20: { label: 'USDT (ERC-20)', short: 'USDT·ERC20', network: 'Ethereum', color: 'text-blue-400' },
-}
 
 // ── Status step mapping ───────────────────────────────────────────────────────
 
@@ -41,6 +27,26 @@ export const STATUS_STEP = {
 }
 
 export const STEPS = ['Waiting', 'Confirming', 'Exchanging', 'Sending', 'Done']
+
+// ── Popular tickers (shown before search) ─────────────────────────────────────
+
+export const POPULAR_TICKERS = [
+  'btc', 'eth', 'usdterc20', 'usdttrc20', 'sol', 'bnb', 'xrp',
+  'trx', 'ltc', 'ada', 'doge', 'matic', 'avax', 'dot', 'link',
+]
+
+// ── Coin image URL ────────────────────────────────────────────────────────────
+
+export function coinImageUrl(ticker) {
+  return `https://changenow.io/images/sprite/currencies/${ticker}.svg`
+}
+
+// ── Step 0 — Available currencies ────────────────────────────────────────────
+
+export async function fetchCurrencies() {
+  const { data } = await api.get('/api/cn-currencies')
+  return data // array of { ticker, name, image, network, ... }
+}
 
 // ── Step A — Live rate estimate ───────────────────────────────────────────────
 
@@ -69,7 +75,6 @@ export async function fetchMinAmount(fromCurrency, toCurrency) {
 export async function createSwap({ from, to, address, amount, refundAddress }) {
   const body = { from, to, address, amount: String(amount) }
   if (refundAddress) body.refundAddress = refundAddress
-
   const { data } = await api.post('/api/cn-swap', body)
   return data
 }

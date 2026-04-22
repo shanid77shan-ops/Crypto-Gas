@@ -1,5 +1,5 @@
 // Bump version whenever you need to force-evict all cached assets
-const CACHE   = 'cryptogas-v2'
+const CACHE   = 'cryptogas-v3'
 const STATIC  = [
   '/',
   '/index.html',

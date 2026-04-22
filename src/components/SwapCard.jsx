@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
 import {
-  ArrowUpDown, Copy, CheckCheck, Loader2,
+  ArrowUpDown, Copy, CheckCheck, Loader2, Search,
   AlertCircle, CheckCircle2, XCircle, RefreshCw,
-  ExternalLink, History, ArrowRight, Trash2,
+  ExternalLink, History, ArrowRight, Trash2, ChevronDown, X,
 } from 'lucide-react'
 import {
-  PAIRS, PAIR_LABELS, STEPS, STATUS_STEP,
-  fetchEstimate, fetchMinAmount, createSwap, fetchSwapStatus,
+  STEPS, STATUS_STEP, POPULAR_TICKERS, coinImageUrl,
+  fetchCurrencies, fetchEstimate, fetchMinAmount, createSwap, fetchSwapStatus,
 } from '../lib/SwapProvider'
 
 // ── localStorage helpers ──────────────────────────────────────────────────────
@@ -18,17 +18,17 @@ function loadHistory() {
   try { return JSON.parse(localStorage.getItem(HISTORY_KEY) ?? '[]') }
   catch { return [] }
 }
-
 function persistHistory(entries) {
   localStorage.setItem(HISTORY_KEY, JSON.stringify(entries.slice(0, 50)))
 }
-
-function addHistoryEntry(tx, fromCurrency, toCurrency) {
+function addHistoryEntry(tx, fromCoin, toCoin) {
   const entries = loadHistory()
   entries.unshift({
     id           : tx.id,
-    fromCurrency,
-    toCurrency,
+    fromTicker   : fromCoin.ticker,
+    fromName     : fromCoin.name,
+    toTicker     : toCoin.ticker,
+    toName       : toCoin.name,
     amount       : tx.amount,
     estimated    : tx.estimatedAmount,
     payinAddress : tx.payinAddress,
@@ -38,28 +38,52 @@ function addHistoryEntry(tx, fromCurrency, toCurrency) {
   })
   persistHistory(entries)
 }
-
 function updateHistoryStatus(id, status) {
   const entries = loadHistory()
   const idx = entries.findIndex(e => e.id === id)
   if (idx !== -1) { entries[idx].status = status; persistHistory(entries) }
 }
 
-// ── Tiny helpers ──────────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 function fmt(n, d = 4) {
   if (n == null) return '—'
   return Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: d })
 }
-
 function timeAgo(iso) {
-  const diff = Date.now() - new Date(iso).getTime()
-  const m = Math.floor(diff / 60000)
-  if (m < 1)   return 'just now'
-  if (m < 60)  return `${m}m ago`
+  const m = Math.floor((Date.now() - new Date(iso).getTime()) / 60000)
+  if (m < 1)  return 'just now'
+  if (m < 60) return `${m}m ago`
   const h = Math.floor(m / 60)
-  if (h < 24)  return `${h}h ago`
+  if (h < 24) return `${h}h ago`
   return `${Math.floor(h / 24)}d ago`
+}
+
+// ── Coin image with fallback ──────────────────────────────────────────────────
+
+function CoinIcon({ ticker, size = 24 }) {
+  const [err, setErr] = useState(false)
+  if (err) {
+    return (
+      <div
+        style={{ width: size, height: size }}
+        className="rounded-full bg-slate-700 flex items-center justify-center
+          text-[9px] font-bold text-slate-400 shrink-0"
+      >
+        {ticker?.slice(0, 2).toUpperCase()}
+      </div>
+    )
+  }
+  return (
+    <img
+      src={coinImageUrl(ticker)}
+      alt={ticker}
+      width={size}
+      height={size}
+      className="rounded-full shrink-0"
+      onError={() => setErr(true)}
+    />
+  )
 }
 
 // ── Copy button ───────────────────────────────────────────────────────────────
@@ -68,8 +92,7 @@ function CopyButton({ text }) {
   const [copied, setCopied] = useState(false)
   function handleCopy() {
     navigator.clipboard.writeText(text).then(() => {
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+      setCopied(true); setTimeout(() => setCopied(false), 2000)
     })
   }
   return (
@@ -96,14 +119,156 @@ const STATUS_STYLE = {
   expired   : 'bg-red-500/10 text-red-400 border-red-500/25',
   refunded  : 'bg-orange-500/10 text-orange-400 border-orange-500/25',
 }
-
 function StatusBadge({ status }) {
   const cls = STATUS_STYLE[status] ?? STATUS_STYLE.waiting
   return (
-    <span className={`text-[10px] font-bold uppercase tracking-wide px-2 py-0.5
-      rounded-full border ${cls}`}>
+    <span className={`text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border ${cls}`}>
       {status ?? 'waiting'}
     </span>
+  )
+}
+
+// ── Coin selector (dropdown) ──────────────────────────────────────────────────
+
+function CoinSelector({ value, onChange, currencies, excludeTicker, loading }) {
+  const [open,   setOpen]   = useState(false)
+  const [search, setSearch] = useState('')
+  const ref   = useRef(null)
+  const input = useRef(null)
+
+  // Close on outside click
+  useEffect(() => {
+    function handler(e) {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  useEffect(() => {
+    if (open) setTimeout(() => input.current?.focus(), 50)
+  }, [open])
+
+  const selected = currencies.find(c => c.ticker === value)
+
+  const filtered = (() => {
+    const q = search.trim().toLowerCase()
+    const pool = currencies.filter(c => c.ticker !== excludeTicker)
+    if (!q) {
+      const pop = POPULAR_TICKERS
+        .map(t => pool.find(c => c.ticker === t))
+        .filter(Boolean)
+      const rest = pool.filter(c => !POPULAR_TICKERS.includes(c.ticker))
+      return { popular: pop, rest: [] }
+    }
+    const matched = pool.filter(c =>
+      c.ticker.includes(q) || c.name.toLowerCase().includes(q)
+    ).slice(0, 60)
+    return { popular: [], rest: matched }
+  })()
+
+  function select(coin) {
+    onChange(coin)
+    setOpen(false)
+    setSearch('')
+  }
+
+  return (
+    <div ref={ref} className="relative">
+      {/* Trigger */}
+      <button
+        onClick={() => setOpen(o => !o)}
+        disabled={loading}
+        className="w-full flex items-center gap-2 px-3 py-3 rounded-xl
+          bg-white/[0.04] border border-white/[0.08]
+          hover:bg-white/[0.07] hover:border-white/[0.14]
+          active:scale-[0.98] transition-all text-left"
+      >
+        {loading ? (
+          <Loader2 size={20} className="animate-spin text-slate-600" />
+        ) : selected ? (
+          <CoinIcon ticker={selected.ticker} size={24} />
+        ) : (
+          <div className="w-6 h-6 rounded-full bg-slate-700" />
+        )}
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-bold text-slate-100 truncate">
+            {selected ? selected.ticker.toUpperCase() : 'Select'}
+          </p>
+          {selected && (
+            <p className="text-[10px] text-slate-500 truncate">{selected.name}</p>
+          )}
+        </div>
+        <ChevronDown size={14} className={`text-slate-500 transition-transform shrink-0 ${open ? 'rotate-180' : ''}`} />
+      </button>
+
+      {/* Dropdown */}
+      {open && (
+        <div className="absolute z-50 top-full mt-1 left-0 right-0
+          bg-slate-900 border border-white/[0.10] rounded-xl shadow-2xl overflow-hidden">
+
+          {/* Search */}
+          <div className="p-2 border-b border-white/[0.06]">
+            <div className="flex items-center gap-2 bg-white/[0.05] rounded-lg px-3 py-2">
+              <Search size={13} className="text-slate-500 shrink-0" />
+              <input
+                ref={input}
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Search coin or ticker…"
+                className="flex-1 bg-transparent text-sm text-slate-100 placeholder-slate-600
+                  outline-none min-w-0"
+              />
+              {search && (
+                <button onClick={() => setSearch('')} className="text-slate-600 hover:text-slate-400">
+                  <X size={12} />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* List */}
+          <div className="overflow-y-auto max-h-56 p-1.5">
+            {filtered.popular.length > 0 && (
+              <>
+                <p className="text-[10px] text-slate-600 uppercase tracking-widest px-2 py-1">Popular</p>
+                {filtered.popular.map(c => (
+                  <CoinRow key={c.ticker} coin={c} onSelect={select} active={c.ticker === value} />
+                ))}
+                {filtered.rest.length > 0 && (
+                  <div className="border-t border-white/[0.05] my-1" />
+                )}
+              </>
+            )}
+            {filtered.rest.length > 0 && filtered.popular.length > 0 && (
+              <p className="text-[10px] text-slate-600 uppercase tracking-widest px-2 py-1">All coins</p>
+            )}
+            {filtered.rest.map(c => (
+              <CoinRow key={c.ticker} coin={c} onSelect={select} active={c.ticker === value} />
+            ))}
+            {filtered.popular.length === 0 && filtered.rest.length === 0 && (
+              <p className="text-xs text-slate-600 text-center py-6">No coins found</p>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function CoinRow({ coin, onSelect, active }) {
+  return (
+    <button
+      onClick={() => onSelect(coin)}
+      className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg transition-colors text-left
+        ${active ? 'bg-violet-600/20 text-violet-300' : 'hover:bg-white/[0.05] text-slate-200'}`}
+    >
+      <CoinIcon ticker={coin.ticker} size={22} />
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-bold truncate">{coin.ticker.toUpperCase()}</p>
+        <p className="text-[10px] text-slate-500 truncate">{coin.name}</p>
+      </div>
+    </button>
   )
 }
 
@@ -117,7 +282,6 @@ function ProgressBar({ step, failed }) {
           const done    = !failed && step > i
           const active  = !failed && step === i
           const isError = failed && step === i
-
           return (
             <div key={label} className="flex flex-col items-center gap-1 flex-1">
               <div className={`w-7 h-7 rounded-full flex items-center justify-center
@@ -154,10 +318,6 @@ function ProgressBar({ step, failed }) {
 // ── Deposit panel ─────────────────────────────────────────────────────────────
 
 function DepositPanel({ tx, status, step, failed }) {
-  const explorerBase = tx.fromCurrency === PAIRS.TRC20
-    ? 'https://tronscan.org/#/transaction/'
-    : 'https://etherscan.io/tx/'
-
   return (
     <div className="space-y-5">
       <ProgressBar step={step} failed={failed} />
@@ -177,7 +337,11 @@ function DepositPanel({ tx, status, step, failed }) {
       {step < 4 && !failed && (
         <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-4 space-y-4">
           <p className="text-xs text-slate-500 text-center">
-            Send exactly <span className="text-white font-bold">{tx.amount} {PAIR_LABELS[tx.fromCurrency]?.short}</span> to:
+            Send exactly{' '}
+            <span className="text-white font-bold">
+              {tx.amount} {tx.fromTicker?.toUpperCase()}
+            </span>{' '}
+            to:
           </p>
           <div className="flex justify-center">
             <div className="p-3 bg-white rounded-xl">
@@ -202,18 +366,19 @@ function DepositPanel({ tx, status, step, failed }) {
           </div>
           {status?.amountReceive && (
             <p className="text-xs text-slate-400">
-              Received: <span className="text-white font-bold">{fmt(status.amountReceive)} {PAIR_LABELS[tx.toCurrency]?.short}</span>
+              Received:{' '}
+              <span className="text-white font-bold">
+                {fmt(status.amountReceive)} {tx.toTicker?.toUpperCase()}
+              </span>
             </p>
           )}
-          {status?.payoutHash && (
-            <a
-              href={`${explorerBase}${status.payoutHash}`}
-              target="_blank" rel="noopener noreferrer"
-              className="flex items-center gap-1.5 text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
-            >
-              View on explorer <ExternalLink size={10} />
-            </a>
-          )}
+          <a
+            href={`https://changenow.io/exchange/txs/${tx.id}`}
+            target="_blank" rel="noopener noreferrer"
+            className="flex items-center gap-1.5 text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
+          >
+            View on ChangeNOW <ExternalLink size={10} />
+          </a>
         </div>
       )}
 
@@ -253,39 +418,29 @@ function HistoryPanel({ entries, onClear }) {
       </div>
 
       {entries.map(entry => {
-        const fromLabel = PAIR_LABELS[entry.fromCurrency]
-        const toLabel   = PAIR_LABELS[entry.toCurrency]
         const isExpanded = expanded === entry.id
-        const isFinal = ['finished', 'failed', 'expired', 'refunded'].includes(entry.status)
-        const cnUrl = `https://changenow.io/exchange/txs/${entry.id}`
-
         return (
-          <div
-            key={entry.id}
-            className="rounded-xl border border-white/[0.06] bg-white/[0.02] overflow-hidden"
-          >
-            {/* Row */}
+          <div key={entry.id} className="rounded-xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
             <button
               className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/[0.03] transition-colors text-left"
               onClick={() => setExpanded(isExpanded ? null : entry.id)}
             >
-              {/* Direction */}
-              <div className="flex items-center gap-1.5 shrink-0">
-                <span className={`text-xs font-bold ${fromLabel?.color}`}>{fromLabel?.short}</span>
+              {/* Coin icons */}
+              <div className="flex items-center gap-1 shrink-0">
+                <CoinIcon ticker={entry.fromTicker} size={18} />
                 <ArrowRight size={10} className="text-slate-600" />
-                <span className={`text-xs font-bold ${toLabel?.color}`}>{toLabel?.short}</span>
+                <CoinIcon ticker={entry.toTicker} size={18} />
               </div>
 
-              {/* Amount */}
+              {/* Direction labels + amount */}
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold text-slate-100 truncate">
-                  {fmt(entry.amount, 2)} USDT
+                  {fmt(entry.amount, 4)} {entry.fromTicker?.toUpperCase()}
                 </p>
-                {entry.estimated && (
-                  <p className="text-[10px] text-slate-600 truncate">
-                    ≈ {fmt(entry.estimated, 2)} USDT out
-                  </p>
-                )}
+                <p className="text-[10px] text-slate-600 truncate">
+                  → {entry.toTicker?.toUpperCase()}
+                  {entry.estimated ? ` · ≈ ${fmt(entry.estimated, 4)} out` : ''}
+                </p>
               </div>
 
               {/* Status + time */}
@@ -295,10 +450,8 @@ function HistoryPanel({ entries, onClear }) {
               </div>
             </button>
 
-            {/* Expanded detail */}
             {isExpanded && (
               <div className="border-t border-white/[0.05] px-4 py-3 space-y-2.5 bg-black/10">
-                {/* TX ID */}
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] text-slate-600">TX ID</span>
                   <div className="flex items-center gap-1">
@@ -306,8 +459,6 @@ function HistoryPanel({ entries, onClear }) {
                     <CopyButton text={entry.id} />
                   </div>
                 </div>
-
-                {/* Deposit address */}
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] text-slate-600">Deposit address</span>
                   <div className="flex items-center gap-1">
@@ -315,20 +466,13 @@ function HistoryPanel({ entries, onClear }) {
                     <CopyButton text={entry.payinAddress} />
                   </div>
                 </div>
-
-                {/* Date */}
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] text-slate-600">Created</span>
-                  <span className="text-[10px] text-slate-400">
-                    {new Date(entry.createdAt).toLocaleString()}
-                  </span>
+                  <span className="text-[10px] text-slate-400">{new Date(entry.createdAt).toLocaleString()}</span>
                 </div>
-
-                {/* Track on ChangeNOW */}
                 <a
-                  href={cnUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href={`https://changenow.io/exchange/txs/${entry.id}`}
+                  target="_blank" rel="noopener noreferrer"
                   className="flex items-center gap-1.5 text-[11px] text-indigo-400 hover:text-indigo-300 transition-colors pt-0.5"
                 >
                   Track on ChangeNOW <ExternalLink size={10} />
@@ -345,11 +489,17 @@ function HistoryPanel({ entries, onClear }) {
 // ── Main SwapCard ─────────────────────────────────────────────────────────────
 
 export default function SwapCard() {
-  const [tab,        setTab]        = useState('swap') // 'swap' | 'history'
-  const [history,    setHistory]    = useState(() => loadHistory())
+  const [tab,      setTab]      = useState('swap')
+  const [history,  setHistory]  = useState(() => loadHistory())
 
-  const [fromPair,   setFromPair]   = useState(PAIRS.TRC20)
-  const [toPair,     setToPair]     = useState(PAIRS.ERC20)
+  // Currency list
+  const [currencies,  setCurrencies]  = useState([])
+  const [currLoading, setCurrLoading] = useState(true)
+
+  // Selected coins (full coin objects)
+  const [fromCoin, setFromCoin] = useState(null)
+  const [toCoin,   setToCoin]   = useState(null)
+
   const [amount,     setAmount]     = useState('')
   const [address,    setAddress]    = useState('')
   const [refund,     setRefund]     = useState('')
@@ -360,6 +510,7 @@ export default function SwapCard() {
   const [swapping,   setSwapping]   = useState(false)
   const [error,      setError]      = useState(null)
 
+  // Post-swap state
   const [tx,     setTx]     = useState(null)
   const [status, setStatus] = useState(null)
   const [step,   setStep]   = useState(0)
@@ -368,23 +519,37 @@ export default function SwapCard() {
   const debounceRef = useRef(null)
   const pollRef     = useRef(null)
 
-  // ── Load min amount ──────────────────────────────────────────────────────────
+  // ── Load currencies once ─────────────────────────────────────────────────────
+  useEffect(() => {
+    fetchCurrencies()
+      .then(list => {
+        setCurrencies(list)
+        const find = t => list.find(c => c.ticker === t)
+        setFromCoin(find('btc') ?? list[0] ?? null)
+        setToCoin(find('eth')   ?? list[1] ?? null)
+      })
+      .catch(() => {})
+      .finally(() => setCurrLoading(false))
+  }, [])
+
+  // ── Min amount on pair change ────────────────────────────────────────────────
   useEffect(() => {
     setEstimate(null)
-    fetchMinAmount(fromPair, toPair)
+    if (!fromCoin || !toCoin) return
+    fetchMinAmount(fromCoin.ticker, toCoin.ticker)
       .then(min => setMinAmount(Number(min)))
       .catch(() => setMinAmount(null))
-  }, [fromPair, toPair])
+  }, [fromCoin, toCoin])
 
   // ── Debounced estimate ───────────────────────────────────────────────────────
   useEffect(() => {
     const num = parseFloat(amount)
-    if (!num || num <= 0) { setEstimate(null); return }
+    if (!num || num <= 0 || !fromCoin || !toCoin) { setEstimate(null); return }
     clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(async () => {
       setEstLoading(true); setError(null)
       try {
-        const result = await fetchEstimate(num, fromPair, toPair)
+        const result = await fetchEstimate(num, fromCoin.ticker, toCoin.ticker)
         setEstimate(result)
       } catch (e) {
         setEstimate(null)
@@ -392,7 +557,7 @@ export default function SwapCard() {
       } finally { setEstLoading(false) }
     }, 600)
     return () => clearTimeout(debounceRef.current)
-  }, [amount, fromPair, toPair])
+  }, [amount, fromCoin, toCoin])
 
   // ── Status polling ───────────────────────────────────────────────────────────
   const pollStatus = useCallback(async (txId) => {
@@ -401,7 +566,7 @@ export default function SwapCard() {
       setStatus(s)
       const newStep = STATUS_STEP[s.status] ?? 0
       if (newStep >= 0) setStep(newStep)
-      if (newStep < 0) { setFailed(true); clearInterval(pollRef.current) }
+      if (newStep < 0)  { setFailed(true); clearInterval(pollRef.current) }
       if (s.status === 'finished') clearInterval(pollRef.current)
       updateHistoryStatus(txId, s.status)
       setHistory(loadHistory())
@@ -417,33 +582,39 @@ export default function SwapCard() {
 
   // ── Actions ──────────────────────────────────────────────────────────────────
   function handleFlip() {
-    setFromPair(toPair); setToPair(fromPair)
+    setFromCoin(toCoin); setToCoin(fromCoin)
     setEstimate(null); setError(null)
+  }
+
+  function handleFromChange(coin) {
+    setFromCoin(coin); setEstimate(null); setError(null)
+  }
+  function handleToChange(coin) {
+    setToCoin(coin); setEstimate(null); setError(null)
   }
 
   async function handleSwap() {
     const num = parseFloat(amount)
-    if (!num || num <= 0)              { setError('Enter a valid amount'); return }
-    if (!address.trim())               { setError('Enter your receiving address'); return }
-    if (minAmount && num < minAmount)  { setError(`Minimum is ${minAmount} USDT`); return }
+    if (!num || num <= 0)             { setError('Enter a valid amount'); return }
+    if (!address.trim())              { setError('Enter your receiving address'); return }
+    if (minAmount && num < minAmount) { setError(`Minimum is ${minAmount} ${fromCoin?.ticker?.toUpperCase()}`); return }
 
     setSwapping(true); setError(null)
     try {
       const result = await createSwap({
-        from         : fromPair,
-        to           : toPair,
+        from         : fromCoin.ticker,
+        to           : toCoin.ticker,
         address      : address.trim(),
         amount       : num,
         refundAddress: refund.trim() || undefined,
       })
-      // Attach direction so DepositPanel can reference it
-      result.fromCurrency = fromPair
-      result.toCurrency   = toPair
+      result.fromTicker = fromCoin.ticker
+      result.toTicker   = toCoin.ticker
       setTx(result); setStep(0); setFailed(false)
-      addHistoryEntry(result, fromPair, toPair)
+      addHistoryEntry(result, fromCoin, toCoin)
       setHistory(loadHistory())
     } catch (e) {
-      setError(e?.response?.data?.message ?? 'Swap creation failed — check your API key and address')
+      setError(e?.response?.data?.message ?? 'Swap creation failed — check address and try again')
     } finally { setSwapping(false) }
   }
 
@@ -454,13 +625,8 @@ export default function SwapCard() {
     setEstimate(null); setError(null)
   }
 
-  function handleClearHistory() {
-    persistHistory([])
-    setHistory([])
-  }
+  function handleClearHistory() { persistHistory([]); setHistory([]) }
 
-  const fromLabel = PAIR_LABELS[fromPair]
-  const toLabel   = PAIR_LABELS[toPair]
   const numAmount = parseFloat(amount) || 0
   const belowMin  = minAmount && numAmount > 0 && numAmount < minAmount
 
@@ -471,7 +637,7 @@ export default function SwapCard() {
       <div className="pointer-events-none absolute -top-20 -right-20 w-64 h-64 rounded-full bg-violet-600/8 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-20 -left-20 w-64 h-64 rounded-full bg-cyan-600/8 blur-3xl" />
 
-      {/* Header + Tabs */}
+      {/* Header */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
@@ -479,8 +645,10 @@ export default function SwapCard() {
               <ArrowUpDown size={14} className="text-violet-400" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-slate-100">USDT Cross-Chain Swap</h2>
-              <p className="text-xs text-slate-500 mt-0.5">TRC-20 ↔ ERC-20 · Powered by ChangeNOW</p>
+              <h2 className="text-base font-bold text-slate-100">Cross-Chain Swap</h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                {currencies.length > 0 ? `${currencies.length} coins · ` : ''}Powered by ChangeNOW
+              </p>
             </div>
           </div>
           {tx && tab === 'swap' && (
@@ -494,7 +662,7 @@ export default function SwapCard() {
           )}
         </div>
 
-        {/* Tab row */}
+        {/* Tabs */}
         <div className="flex gap-1 bg-white/[0.03] border border-white/[0.06] rounded-xl p-1">
           {[
             { key: 'swap',    label: 'Swap' },
@@ -514,54 +682,72 @@ export default function SwapCard() {
         </div>
       </div>
 
-      {/* ── Swap tab ── */}
+      {/* ── Swap form ── */}
       {tab === 'swap' && !tx && (
         <div className="space-y-4">
-          {/* From / Flip / To */}
-          <div className="grid grid-cols-[1fr_36px_1fr] items-center gap-2">
-            <div className="rounded-xl bg-white/[0.04] border border-white/[0.07] p-3 space-y-1">
-              <p className="text-[10px] uppercase tracking-widest text-slate-600">From</p>
-              <p className={`text-sm font-bold ${fromLabel.color}`}>{fromLabel.short}</p>
-              <p className="text-[10px] text-slate-600">{fromLabel.network}</p>
-            </div>
-            <button
-              onClick={handleFlip}
-              className="mx-auto flex items-center justify-center w-8 h-8 rounded-full
-                bg-white/[0.05] border border-white/[0.10] text-slate-400
-                hover:bg-violet-600/20 hover:border-violet-500/40 hover:text-violet-300
-                active:scale-90 transition-all"
-            >
-              <ArrowUpDown size={14} />
-            </button>
-            <div className="rounded-xl bg-white/[0.04] border border-white/[0.07] p-3 space-y-1">
-              <p className="text-[10px] uppercase tracking-widest text-slate-600">To</p>
-              <p className={`text-sm font-bold ${toLabel.color}`}>{toLabel.short}</p>
-              <p className="text-[10px] text-slate-600">{toLabel.network}</p>
-            </div>
+
+          {/* From selector */}
+          <div className="space-y-1.5">
+            <p className="text-[10px] uppercase tracking-widest text-slate-600 pl-1">From</p>
+            <CoinSelector
+              value={fromCoin?.ticker}
+              onChange={handleFromChange}
+              currencies={currencies}
+              excludeTicker={toCoin?.ticker}
+              loading={currLoading}
+            />
           </div>
 
-          {/* Amount */}
+          {/* Amount input */}
           <div className="space-y-1.5">
             <div className="relative">
               <input
                 type="number" min="0" step="any"
                 value={amount}
                 onChange={e => { setAmount(e.target.value); setError(null) }}
-                placeholder="Amount to swap"
+                placeholder="Amount to send"
                 className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl
-                  pl-4 pr-20 py-3.5 text-sm text-slate-100 placeholder-slate-600
+                  pl-4 pr-24 py-3.5 text-sm text-slate-100 placeholder-slate-600
                   focus:outline-none focus:ring-2 focus:ring-violet-500/60
                   focus:border-violet-500/40 transition-all"
               />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-mono font-bold text-slate-500">
-                USDT
-              </span>
+              {fromCoin && (
+                <span className="absolute right-4 top-1/2 -translate-y-1/2
+                  text-xs font-mono font-bold text-slate-500 truncate max-w-[72px]">
+                  {fromCoin.ticker.toUpperCase()}
+                </span>
+              )}
             </div>
             {minAmount && (
-              <p className={`text-[11px] ${belowMin ? 'text-rose-400' : 'text-slate-600'}`}>
-                Minimum: {minAmount} USDT
+              <p className={`text-[11px] pl-1 ${belowMin ? 'text-rose-400' : 'text-slate-600'}`}>
+                Minimum: {minAmount} {fromCoin?.ticker?.toUpperCase()}
               </p>
             )}
+          </div>
+
+          {/* Swap direction button */}
+          <div className="flex justify-center -my-1">
+            <button
+              onClick={handleFlip}
+              className="flex items-center justify-center w-9 h-9 rounded-full
+                bg-white/[0.05] border border-white/[0.10] text-slate-400
+                hover:bg-violet-600/20 hover:border-violet-500/40 hover:text-violet-300
+                active:scale-90 transition-all"
+            >
+              <ArrowUpDown size={15} />
+            </button>
+          </div>
+
+          {/* To selector */}
+          <div className="space-y-1.5">
+            <p className="text-[10px] uppercase tracking-widest text-slate-600 pl-1">To</p>
+            <CoinSelector
+              value={toCoin?.ticker}
+              onChange={handleToChange}
+              currencies={currencies}
+              excludeTicker={fromCoin?.ticker}
+              loading={currLoading}
+            />
           </div>
 
           {/* Estimate */}
@@ -570,23 +756,27 @@ export default function SwapCard() {
             <p className="text-xs text-slate-500">You will receive</p>
             {estLoading ? (
               <Loader2 size={14} className="animate-spin text-slate-600" />
-            ) : estimate ? (
+            ) : estimate?.estimatedAmount ? (
               <div className="text-right">
-                <p className="text-sm font-black text-emerald-400">{fmt(estimate.estimatedAmount)} USDT</p>
-                <p className="text-[10px] text-slate-600">{toLabel.short}</p>
+                <p className="text-sm font-black text-emerald-400">
+                  {fmt(estimate.estimatedAmount)} {toCoin?.ticker?.toUpperCase()}
+                </p>
+                <p className="text-[10px] text-slate-600">{toCoin?.name}</p>
               </div>
             ) : (
               <p className="text-xs text-slate-700">Enter amount above</p>
             )}
           </div>
 
-          {/* Address */}
+          {/* Receiving address */}
           <div className="space-y-2">
-            <label className="text-xs text-slate-500">Your {toLabel.network} receiving address</label>
+            <label className="text-xs text-slate-500">
+              Your {toCoin?.name ?? 'receiving'} address
+            </label>
             <input
               type="text" value={address} spellCheck={false}
               onChange={e => { setAddress(e.target.value); setError(null) }}
-              placeholder={toLabel.network === 'TRON' ? 'T… (TRON address)' : '0x… (Ethereum address)'}
+              placeholder={`${toCoin?.ticker?.toUpperCase() ?? 'Coin'} address`}
               className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl
                 px-4 py-3 text-sm font-mono text-slate-100 placeholder-slate-600
                 focus:outline-none focus:ring-2 focus:ring-violet-500/60
@@ -594,7 +784,7 @@ export default function SwapCard() {
             />
           </div>
 
-          {/* Refund */}
+          {/* Refund address */}
           <button
             onClick={() => setShowRefund(r => !r)}
             className="text-[11px] text-slate-600 hover:text-slate-400 transition-colors"
@@ -605,7 +795,7 @@ export default function SwapCard() {
             <input
               type="text" value={refund} spellCheck={false}
               onChange={e => setRefund(e.target.value)}
-              placeholder="Refund address (same network as source)"
+              placeholder={`Refund address (${fromCoin?.ticker?.toUpperCase() ?? 'source'} network)`}
               className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl
                 px-4 py-3 text-sm font-mono text-slate-100 placeholder-slate-600
                 focus:outline-none focus:ring-2 focus:ring-violet-500/50 transition-all"
@@ -623,7 +813,7 @@ export default function SwapCard() {
           {/* Swap button */}
           <button
             onClick={handleSwap}
-            disabled={swapping || !amount || !address || belowMin}
+            disabled={swapping || !amount || !address || belowMin || !fromCoin || !toCoin}
             className="w-full py-3.5 rounded-xl text-sm font-bold transition-all
               bg-gradient-to-r from-violet-600 to-indigo-600
               hover:from-violet-500 hover:to-indigo-500
@@ -635,17 +825,17 @@ export default function SwapCard() {
                 <Loader2 size={15} className="animate-spin" /> Creating swap…
               </span>
             ) : (
-              `Swap ${amount || '—'} USDT ${fromLabel.short} → ${toLabel.short}`
+              `Swap ${amount || '—'} ${fromCoin?.ticker?.toUpperCase() ?? '?'} → ${toCoin?.ticker?.toUpperCase() ?? '?'}`
             )}
           </button>
 
           <p className="text-[10px] text-slate-700 text-center">
-            Rates provided by ChangeNOW · No custody of funds · Min. network fees apply
+            Rates by ChangeNOW · Non-custodial · Network fees apply
           </p>
         </div>
       )}
 
-      {/* ── Post-swap deposit panel ── */}
+      {/* ── Deposit panel ── */}
       {tab === 'swap' && tx && (
         <DepositPanel tx={tx} status={status} step={step} failed={failed} />
       )}
